@@ -57,6 +57,15 @@ npm install
     - **iOS Browser:**  `npm run ios.browser`
     - **Android App with cucumber:** `npm run android.app.cucumber`
 
+### Allure report
+
+WDIO writes Allure results to `allure-results/` whenever the tests run. Generate and open the HTML report with:
+
+```sh
+npm run allure:generate
+npm run allure:open
+```
+
 ## How to implement in your project
 
 Choose one of the following options:

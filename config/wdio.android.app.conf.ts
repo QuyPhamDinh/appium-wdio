@@ -24,10 +24,11 @@ export const config: WebdriverIO.Config = {
 
             //
             // NOTE: Change this name according to the Emulator you have created on your local machine
-            "appium:deviceName": "Pixel_8_Pro_Android_15_API_35",
+            "appium:deviceName": "Pixel 10",
             //
             // NOTE: Change this version according to the Emulator you have created on your local machine
-            "appium:platformVersion": "15.0",
+            "appium:platformVersion": "17.0",
+            "appium:udid": "emulator-5554",
             "appium:orientation": "PORTRAIT",
             "appium:automationName": "UiAutomator2",
             // The path to the app
@@ -36,7 +37,7 @@ export const config: WebdriverIO.Config = {
                 "apps",
                 //
                 // NOTE: Change this name according to the app version you downloaded
-                "android.wdio.native.app.v2.0.0.apk"
+                "android.wdio.native.app.v2.2.0.apk"
             ),
             "appium:appWaitActivity": "com.wdiodemoapp.MainActivity",
             "appium:newCommandTimeout": 240,
