@@ -32,6 +32,13 @@ export const config: WebdriverIO.Config = {
                 "steps",
                 "login_and_signup_steps.ts"
             ),
+            path.join(
+                __dirname,
+                "..",
+                "tests",
+                "steps",
+                "warm_resume_steps.ts"
+            ),
         ], // <string[]> (file/dir) require files before executing features
         backtrace: false, // <boolean> show full backtrace for errors
         compiler: [], // <string[]> ("extension:module") require files with the given EXTENSION after requiring MODULE (repeatable)
@@ -39,7 +46,7 @@ export const config: WebdriverIO.Config = {
         failFast: false, // <boolean> abort the run on first failure
         snippets: true, // <boolean> hide step definition snippets for pending steps
         source: true, // <boolean> hide source URIs
-        strict: false, // <boolean> fail if there are any undefined or pending steps
+        strict: true, // <boolean> fail if there are any undefined or pending steps
         timeout: 20000, // <number> timeout for step definitions
         ignoreUndefinedDefinitions: false, // <boolean> Enable this config to treat undefined definitions as warnings.
         scenarioLevelReporter: false, // Enable this to make webdriver.io behave as if scenarios and not steps were the tests.
