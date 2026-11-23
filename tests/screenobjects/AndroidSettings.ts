@@ -1,6 +1,9 @@
-import { DEFAULT_PIN } from '../helpers/Constants.js';
+import { DEFAULT_PIN, PACKAGE_NAME } from '../helpers/Constants.js';
+import { activateDemoApp } from '../helpers/Utils.js';
 
 class AndroidSettings {
+    private testPinSet = false;
+
     /**
      * Get the platform version
      */
@@ -124,10 +127,10 @@ class AndroidSettings {
      * FingerPrint on Android 9 (2018) till the latest one all automatically for you.
      */
     async enableBiometricLogin() {
-        // Open the settings screen and set screen lock to pin
-        await this.executeAdbCommand(
-            `am start -a android.settings.SECURITY_SETTINGS && locksettings set-pin ${DEFAULT_PIN}`,
-        );
+        // Set the PIN before opening Settings so the security screen starts with the new state.
+        await driver.execute('mobile: shell', { command: 'locksettings', args: ['set-pin', String(DEFAULT_PIN)] });
+        this.testPinSet = true;
+        await driver.execute('mobile: shell', { command: 'am', args: ['start', '-W', '-a', 'android.settings.SECURITY_SETTINGS'] });
         // As of Android 14 there is a new flow to enable finger print
         if (this.platformVersion >= 14) {
             // There might be two Device unlock options, the first is the notification, the second is the actual setting
@@ -135,13 +138,44 @@ class AndroidSettings {
             await this.waitForMatchingElement('Device unlock.*');
             // Android 14 might have notifications that might block searching the right element, so we need to close them
             await this.closeSettingsScreenLockNotifications();
-            await this.waitAndTap('Device unlock');
+            await this.openDeviceUnlock();
             await this.waitAndTap('.*Fingerprint.*Unlock');
         } else {
             await this.waitAndTap('.*Fingerprint.*');
         }
         await this.fingerPrintWizard(DEFAULT_PIN);
+    }
 
+    private async openDeviceUnlock() {
+        const fingerprintOption = await this.findAndroidElementByMatchingText('.*Fingerprint.*Unlock');
+        await driver.waitUntil(async () => {
+            if (await fingerprintOption.isDisplayed()) {
+                return true;
+            }
+            const deviceUnlock = await this.findAndroidElementByMatchingText('Device unlock');
+            if (await deviceUnlock.isDisplayed()) {
+                try {
+                    await deviceUnlock.click();
+                } catch (error) {
+                    if (!(error instanceof Error) || !/stale element reference|does not exist in DOM anymore/i.test(error.message)) {
+                        throw error;
+                    }
+                }
+            }
+            return fingerprintOption.isDisplayed();
+        }, { timeout: 15000, timeoutMsg: 'Android Settings did not open Device unlock' });
+    }
+
+    async restoreAfterBiometricLogin() {
+        if (!this.testPinSet) {
+            return;
+        }
+        try {
+            await driver.execute('mobile: shell', { command: 'locksettings', args: ['clear', '--old', String(DEFAULT_PIN)] });
+            this.testPinSet = false;
+        } finally {
+            await activateDemoApp(PACKAGE_NAME);
+        }
     }
 }
 

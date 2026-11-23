@@ -37,6 +37,12 @@ describe('WebdriverIO and Appium, when interacting with a biometric button,', ()
         }
     });
 
+    after(async () => {
+        if (driver.isAndroid) {
+            await AndroidSettings.restoreAfterBiometricLogin();
+        }
+    });
+
     it('should be able to login with a matching touch/faceID/fingerprint', async () => {
         // Always make sure you are on the right tab
         await LoginScreen.tapOnLoginContainerButton();

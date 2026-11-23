@@ -12,8 +12,17 @@ permissions:
 
 jobs:
     android-app:
+        name: Android ${{ matrix.suite }}
         runs-on: ubuntu-latest
         timeout-minutes: 30
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - suite: app
+                      reports: android-test-reports
+                    - suite: biometrics
+                      reports: android-biometric-test-reports
         env:
             ANDROID_DEVICE_NAME: Pixel 7 Pro
             ANDROID_PLATFORM_VERSION: '15.0'
@@ -47,14 +56,15 @@ jobs:
                   arch: x86_64
                   profile: pixel_7_pro
                   disable-animations: true
-                  script: npm run android.app
+                  script: bash scripts/run-android-ci.sh ${{ matrix.suite }}
 
             - name: Upload Android test reports
               if: always()
               uses: actions/upload-artifact@v4
               with:
-                  name: android-test-reports
+                  name: ${{ matrix.reports }}
                   path: |
                       junit-results/
                       allure-results/
+                      logs/
                   if-no-files-found: warn
