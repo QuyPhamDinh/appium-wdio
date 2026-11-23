@@ -57,6 +57,20 @@ npm install
     - **iOS Browser:**  `npm run ios.browser`
     - **Android App with cucumber:** `npm run android.app.cucumber`
 
+### iOS Simulator
+
+Install Xcode and an iOS Simulator runtime, then run the local iOS app suite:
+
+```sh
+npm run ios.app
+```
+
+The default simulator is `iPhone 16 Pro` on iOS `18.2`. Override them when needed:
+
+```sh
+IOS_DEVICE_NAME="iPhone 16" IOS_PLATFORM_VERSION="26.0" npm run ios.app
+```
+
 ### Allure report
 
 WDIO writes Allure results to `allure-results/` whenever the tests run. Generate and open the HTML report with:
