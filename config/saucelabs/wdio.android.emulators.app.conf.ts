@@ -4,6 +4,8 @@ const buildName = `WebdriverIO Native Demo app, Android Emulators: ${new Date().
 
 export const config: WebdriverIO.Config = {
     ...baseConfig,
+    // The Sauce Labs emulator runs remotely and needs no local display server.
+    autoXvfb: false,
     reporters: [
         ...(baseConfig.reporters ?? []),
         ['junit', {
