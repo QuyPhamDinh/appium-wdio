@@ -121,6 +121,7 @@ export function getAppId(): string {
 
 /**
  * Activate the demo app, starting it if needed.
+ * On iOS, WebDriverAgent's launchApp activates an already-running app.
  */
 export async function activateDemoApp(identifier:string) {
     await driver.execute(`mobile: ${driver.isAndroid ? 'activateApp' : 'launchApp'}`, {

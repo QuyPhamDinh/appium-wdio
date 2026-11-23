@@ -19,6 +19,17 @@ class FormsScreen extends AppScreen {
     get activeButton () {return $('~button-Active');}
     get inActiveButton () {return $('~button-Inactive');}
 
+    async isInputEmpty(): Promise<boolean> {
+        if (driver.isAndroid) {
+            const text = await this.input.getAttribute('text');
+            const hint = await this.input.getAttribute('hint');
+            return text === '' || text === hint;
+        }
+
+        const text = await this.input.getText();
+        return text === '' || text === 'Type something';
+    }
+
     async tapOnInputTextResult(){
         await this.inputTextResult.click();
     }

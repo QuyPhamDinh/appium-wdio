@@ -7,7 +7,7 @@ Given('I am on the Forms screen', async () => {
     await FormsScreen.waitForIsShown(true);
 });
 
-When(/^I have entered "([^"]*)" in the text input$/, async (text:string) => {
+When(/^(?:I have entered|I enter) "([^"]*)" in the text input$/, async (text: string) => {
     await FormsScreen.input.setValue(text);
 });
 
@@ -17,10 +17,6 @@ Given('the text input is initially empty', async () => {
 
 Given('the form switch is initially off', async () => {
     await FormsScreen.setSwitch(false);
-});
-
-When(/^I enter "([^"]*)" in the text input$/, async (text:string) => {
-    await FormsScreen.input.setValue(text);
 });
 
 When('I turn on the form switch', async () => {
@@ -49,15 +45,7 @@ Then(/^the text input contains "([^"]*)"$/, async (text:string) => {
 });
 
 Then('the text input is empty', async () => {
-    if (driver.isAndroid) {
-        const text = await FormsScreen.input.getAttribute('text');
-        const hint = await FormsScreen.input.getAttribute('hint');
-        await expect(text === '' || text === hint).toBe(true);
-        return;
-    }
-
-    const text = await FormsScreen.input.getText();
-    await expect(text === '' || text === 'Type something').toBe(true);
+    await expect(await FormsScreen.isInputEmpty()).toBe(true);
 });
 
 Then('the form switch is on', async () => {
