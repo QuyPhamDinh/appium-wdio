@@ -1,3 +1,5 @@
+import { PACKAGE_NAME } from './Constants.js';
+
 export const CONTEXT_REF = {
     NATIVE_APP: 'NATIVE_APP',
     WEBVIEW: 'WEBVIEW',
@@ -21,7 +23,7 @@ type IosContext  = {
 }
 type AndroidContext =  {
     packageName?: string;
-    webviewName?: string;
+    webviewPageId?: string;
     androidWebviewData?: {
         attached: boolean;
         empty: boolean;
@@ -55,67 +57,48 @@ type AndroidContext =  {
  * Please read the comments in the code for more information.
  */
 class WebView {
-    /**
-     * Wait for the webview context to be added to the contexts
-     *
-     * NOTE: this will say nothing if the url in the webview is loaded, only that the expected webview is added to the contexts
-     *
-     * The Webview is always connected to the app we are testing, this means we need to get the app identifier and see if the
-     * webview context is added. For Android this will be the `packageName` and for iOS this will be the `bundleId`.
-     *
-     * By default you have `NATIVE_APP` as the current context. If a webview is added it will be added to the current contexts.
-     * We use a custom command to get the current contexts because the official `driver.getContexts()`
-     * doesn't return enough valuable information which we later on need to switch to the correct webview.
-     *
-     * NOTES:
-     * - Android: The string behind `WEBVIEW` will the package name of the app that holds the webview
-     * - iOS: The number behind `WEBVIEW` will be a random number in random order.
-     */
-    async waitForWebViewContextAdded(): Promise<string> {
-        let webviewName: string = '';
+    async switchToWebsite() {
+        let selectedContext: { id: string; pageId?: string } | undefined;
 
-        await driver.waitUntil(
-            async () => {
-                // Check this method for detailed webview context information
-                const currentContexts = await driver.getContexts({
-                    returnAndroidDescriptionData: true,
-                    returnDetailedContexts: true,
-                });
+        await driver.waitUntil(async () => {
+            const contexts = await driver.getContexts({
+                returnAndroidDescriptionData: true,
+                returnDetailedContexts: true,
+            });
 
-                // The name of the webview can be different on Android and iOS, so we need to check for both
-                const appIdentifier = driver.isIOS ?
-                    // Strange behavior with EXPO vs Bare React Native project. The bundleID that is returned is different than the
-                    // app identifier. In this case it is 'process-wdiodemoapp'. We also needed to add `"appium:additionalWebviewBundleIds": ["*"],`
-                    // to the caps to find the webview
-                    'process-wdiodemoapp' :
-                    await driver.getCurrentPackage()
+            for (const entry of contexts) {
+                const context = entry as ContextInterface;
+                if (driver.isIOS) {
+                    if ((entry as IosContext).bundleId === 'process-wdiodemoapp' && context.url !== 'about:blank') {
+                        selectedContext = { id: context.id };
+                        return true;
+                    }
+                } else {
+                    const androidContext = entry as AndroidContext;
+                    if (androidContext.packageName === PACKAGE_NAME &&
+                        androidContext.androidWebviewData?.empty === false &&
+                        androidContext.webviewPageId &&
+                        /WebdriverIO.*/.test(context.title ?? '') &&
+                        context.url?.includes('https://webdriver.io/')) {
+                        selectedContext = { id: context.id, pageId: androidContext.webviewPageId };
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }, {
+            timeout: 45000,
+            interval: 500,
+            timeoutMsg: 'The WebdriverIO website context did not become available',
+        });
 
-
-                return currentContexts.length > 1 &&
-                    currentContexts.find(context => {
-                        if (driver.isIOS){
-                            // Also check if the url is not blank for iOS, meaning nothing is loaded. This is the "first state" for iOS
-                            const foundContext = (context as IosContext).bundleId === appIdentifier && (context as ContextInterface)?.url !== 'about:blank';
-                            if (foundContext) {
-                                webviewName =  (context as IosContext).id;
-                            }
-
-                            return foundContext
-                        }
-
-                        // Also check that the matching page is not empty
-                        return (context as AndroidContext).packageName === appIdentifier && (context as AndroidContext)?.androidWebviewData?.empty === false;
-                    });
-            }, {
-                // Wait a max of 45 seconds. Reason for this high amount is that loading
-                // a webview for iOS might take longer
-                timeout: 45 * 1000,
-                timeoutMsg: 'Webview context not loaded',
-                interval: 100,
-            },
-        );
-
-        return webviewName;
+        if (!selectedContext) {
+            throw new Error('No WebView context was selected');
+        }
+        await driver.switchAppiumContext(selectedContext.id);
+        if (selectedContext.pageId) {
+            await driver.switchToWindow(selectedContext.pageId);
+        }
     }
 
     /**
@@ -141,20 +124,7 @@ class WebView {
      * Wait for the website in the webview to be loaded
      */
     async waitForWebsiteLoaded () {
-        const webviewName = await this.waitForWebViewContextAdded();
-        // we know we want to switch to the webview of WebdriverIO, so we can already provide the title and url that expect to find.
-        // This will make the search more accurate
-        if (driver.isIOS) {
-            // We need to update the switchContext in WebdriverIO to also be able to pass a packageName or bundleID
-            // because it now automatically detects it based on the current active app
-            // which in some cases is not correct
-            await driver.switchAppiumContext(webviewName);
-        } else {
-            await driver.switchContext({
-                title: /WebdriverIO.*/,
-                url: 'https://webdriver.io/',
-            });
-        }
+        await this.switchToWebsite();
         await this.waitForDocumentFullyLoaded();
         await driver.switchContext(CONTEXT_REF.NATIVE_APP);
     }

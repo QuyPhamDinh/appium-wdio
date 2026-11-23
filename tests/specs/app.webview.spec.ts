@@ -11,65 +11,11 @@ describe("WebdriverIO and Appium, when interacting with a WebView,", () => {
     // So please take a look at this code to see how you could use WebViews and context switching
     // for your app.
     if (driver.isAndroid) {
-        beforeEach(async () => {
-            // Wait for the tab bar to be show
-            await TabBar.waitForTabBarShown();
-            // Open the webview page
-            await TabBar.openWebView();
-            // This is where a lot of magic is happening
-            // - it waits for the webview context to be loaded
-            // - it will then switch to the webview and check if the website is
-            //   fully loaded
-            // - it will then return back to the native context
-            await WebViewScreen.waitForWebsiteLoaded();
-        });
-
-        it("should be able search for the url method and open it", async () => {
-            // To be able to use the site in the webview of the app we first need to
-            // change the context from native to webview
-            await driver.switchContext({
-                // We switch to the webview context by using more detailed information
-                // We check with a regex on the title and the url
-                title: /WebdriverIO.*/,
-                url: 'https://webdriver.io/',
-            });
-            // Now the site can be accessed like you would automate a normal website
-            // keep in mind the responsiveness
-
-            // Open the search options
-            await $(".DocSearch").click();
-            // Search for url
-            await $(".DocSearch-Input").setValue("url");
-            await driver.waitUntil(async () =>
-                (await $(".DocSearch-HitsFooter").getText()).includes("See all")
-            );
-            // Let's take the first result
-            await $("#docsearch-hits0-item-0 a").click();
-
-            // Now wait for the header to be displayed and verify that we are on the correct page
-            await $("h1").waitForDisplayed({ timeout: 3000 });
-            await expect(await driver.getTitle()).toEqual("url | WebdriverIO");
-
-            /**
-             * IMPORTANT!!
-             *  Because the app is not closed and opened between the 2 tests
-             *  (and thus is NOT starting in the default context which is native)
-             *  the context is here set to native. This is bad practice,
-             *  because you should never rely on the state of a different test,
-             *  but here it is excepted ;-)
-             */
-            await driver.switchContext(CONTEXT_REF.NATIVE_APP);
-        });
-
         it("should be able to switch between webview, native and webview", async () => {
-            // To be able to use the site in the webview of the app we first need to
-            // change the context from native to webview
-            await driver.switchContext({
-                // We switch to the webview context by using more detailed information
-                // We check with a regex on the title and the url
-                title: /WebdriverIO.*/,
-                url: 'https://webdriver.io/',
-            });
+            await TabBar.waitForTabBarShown();
+            await TabBar.openWebView();
+            await WebViewScreen.switchToWebsite();
+
             // Open the search options
             await $(".DocSearch").click();
             // Wait for the search box to be there
@@ -99,16 +45,9 @@ describe("WebdriverIO and Appium, when interacting with a WebView,", () => {
             await TabBar.openSwipe();
             await SwipeScreen.waitForIsShown();
 
-            // Return to the WebView and wait for DocSearch to be usable again.
             await TabBar.openWebView();
-            // To be able to use the site in the webview webdriver.io first needs
-            // change the context from native to webview
-            await driver.switchContext({
-                // We switch to the webview context by using more detailed information
-                // We check with a regex on the title and the url
-                title: /WebdriverIO.*/,
-                url: 'https://webdriver.io/',
-            });
+            await WebViewScreen.switchToWebsite();
+
             const searchInput = $('.DocSearch-Input');
             const searchButton = $('.DocSearch-Button');
             await driver.waitUntil(
