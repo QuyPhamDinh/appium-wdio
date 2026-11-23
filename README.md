@@ -91,7 +91,7 @@ npm run android.app.cucumber -- --spec tests/features/warm_resume.feature
 npm run ios.app.cucumber -- --spec tests/features/warm_resume.feature
 ```
 
-Each command selects scenarios tagged for its platform. The Sauce Labs CI workflows run the app suites. Run the lifecycle feature locally with the commands above.
+Each command selects scenarios tagged for its platform. The [Mobile Lifecycle Tests workflow](./.github/workflows/e2e-mobile-lifecycle.yml) also runs this feature on pull requests using a GitHub-hosted Android emulator and iOS simulator. It requires no Sauce Labs credentials. To run it manually once the workflow is on the default branch, go to **Actions → Mobile Lifecycle Tests → Run workflow**.
 
 ### Allure report
 

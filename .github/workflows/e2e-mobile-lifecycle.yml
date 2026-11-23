@@ -1,0 +1,94 @@
+name: Mobile Lifecycle Tests
+
+on:
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    android:
+        name: Android lifecycle
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        env:
+            ANDROID_DEVICE_NAME: Pixel 7 Pro
+            ANDROID_PLATFORM_VERSION: '15.0'
+            ANDROID_UDID: emulator-5554
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+                  cache: npm
+            - run: npm ci
+
+            - name: Download Android demo app
+              run: |
+                  mkdir -p apps
+                  curl --fail --silent --show-error --location \
+                    https://github.com/webdriverio/native-demo-app/releases/download/v2.2.0/android.wdio.native.app.v2.2.0.apk \
+                    --output apps/android.wdio.native.app.v2.2.0.apk
+
+            - name: Enable KVM access
+              run: |
+                  echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+                  sudo udevadm control --reload-rules
+                  sudo udevadm trigger --name-match=kvm
+
+            - name: Run Android lifecycle scenarios
+              uses: reactivecircus/android-emulator-runner@v2
+              with:
+                  api-level: 35
+                  target: google_apis
+                  arch: x86_64
+                  profile: pixel_7_pro
+                  disable-animations: true
+                  script: npm run android.app.cucumber -- --spec tests/features/warm_resume.feature
+
+            - name: Upload Android failure diagnostics
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: android-lifecycle-diagnostics
+                  path: |
+                      logs/
+                      allure-results/
+
+    ios:
+        name: iOS lifecycle
+        runs-on: macos-15
+        timeout-minutes: 30
+        env:
+            DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+            IOS_DEVICE_NAME: iPhone 16 Pro
+            IOS_PLATFORM_VERSION: '18.5'
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+                  cache: npm
+            - run: npm ci
+
+            - name: Download iOS simulator demo app
+              run: |
+                  mkdir -p apps
+                  curl --fail --silent --show-error --location \
+                    https://github.com/webdriverio/native-demo-app/releases/download/v2.2.0/ios.simulator.wdio.native.app.v2.2.0.zip \
+                    --output "$RUNNER_TEMP/wdio-ios.zip"
+                  ditto -x -k "$RUNNER_TEMP/wdio-ios.zip" apps
+                  test -d apps/wdiodemoapp.app
+
+            - name: Run iOS lifecycle scenarios
+              run: npm run ios.app.cucumber -- --spec tests/features/warm_resume.feature
+
+            - name: Upload iOS failure diagnostics
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ios-lifecycle-diagnostics
+                  path: |
+                      logs/
+                      allure-results/
