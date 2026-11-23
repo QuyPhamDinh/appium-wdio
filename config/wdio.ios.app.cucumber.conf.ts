@@ -19,7 +19,7 @@ export const config: WebdriverIO.Config = {
         failFast: false,
         snippets: true,
         source: true,
-        strict: false,
+        strict: true,
         timeout: 20000,
         ignoreUndefinedDefinitions: false,
         scenarioLevelReporter: false,

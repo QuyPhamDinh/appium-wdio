@@ -48,14 +48,23 @@ npm install
 
 3. Create a `./apps` directory at the root of this project. Download the app files (`.zip` / `.apk`) with version >= `1.0.0`, which can be found [here](https://github.com/webdriverio/native-demo-app/releases), into the `./apps` folder.
 
-4. Adjust the configuration file(s) for [Android](./config/wdio.android.app.conf.ts) and [iOS](./config/wdio.ios.app.conf.ts) regarding the device configuration you've created on your local machine.
+4. Set the device overrides below if your Android emulator or iOS simulator differs from the defaults.
 
 5. Running tests locally
     - **Android App:** `npm run android.app`
     - **Android Browser:**  `npm run android.browser`
     - **iOS App:** `npm run ios.app`
     - **iOS Browser:**  `npm run ios.browser`
-    - **Android App with cucumber:** `npm run android.app.cucumber`
+    - **Android App with Cucumber:** `npm run android.app.cucumber`
+    - **iOS App with Cucumber:** `npm run ios.app.cucumber`
+
+### Android Emulator
+
+The local Android app configs default to `Pixel 10` on Android `17.0` with UDID `emulator-5554`. Use `adb devices` to find your emulator's UDID and override the defaults as needed:
+
+```sh
+ANDROID_DEVICE_NAME="Pixel 8" ANDROID_PLATFORM_VERSION="15.0" ANDROID_UDID="emulator-5556" npm run android.app
+```
 
 ### iOS Simulator
 
@@ -70,6 +79,19 @@ The default simulator is `iPhone 16 Pro` on iOS `18.2`. Override them when neede
 ```sh
 IOS_DEVICE_NAME="iPhone 16" IOS_PLATFORM_VERSION="26.0" npm run ios.app
 ```
+
+### App lifecycle scenarios
+
+[The lifecycle feature](./tests/features/warm_resume.feature) checks that Forms state survives backgrounding and reactivation. It also covers Android Recents, Android process death via `am kill`, and iOS termination and relaunch.
+
+Start the target emulator or simulator. Place `android.wdio.native.app.v2.2.0.apk` or the extracted `wdiodemoapp.app` in `apps/` for the platform you want to test. The device overrides above also apply to the Cucumber commands.
+
+```sh
+npm run android.app.cucumber -- --spec tests/features/warm_resume.feature
+npm run ios.app.cucumber -- --spec tests/features/warm_resume.feature
+```
+
+Each command selects scenarios tagged for its platform. The Sauce Labs CI workflows run the app suites. Run the lifecycle feature locally with the commands above.
 
 ### Allure report
 

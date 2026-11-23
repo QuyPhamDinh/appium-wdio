@@ -24,11 +24,11 @@ export const config: WebdriverIO.Config = {
 
             //
             // NOTE: Change this name according to the Emulator you have created on your local machine
-            "appium:deviceName": "Pixel 10",
+            "appium:deviceName": process.env.ANDROID_DEVICE_NAME || "Pixel 10",
             //
             // NOTE: Change this version according to the Emulator you have created on your local machine
-            "appium:platformVersion": "17.0",
-            "appium:udid": "emulator-5554",
+            "appium:platformVersion": process.env.ANDROID_PLATFORM_VERSION || "17.0",
+            "appium:udid": process.env.ANDROID_UDID || "emulator-5554",
             "appium:orientation": "PORTRAIT",
             "appium:automationName": "UiAutomator2",
             // The path to the app
