@@ -3,6 +3,13 @@ const buildName = `WebdriverIO Native Demo app, iOS Simulators: ${new Date().get
 
 export const config: WebdriverIO.Config = {
     ...baseConfig,
+    reporters: [
+        ...(baseConfig.reporters ?? []),
+        ['junit', {
+            outputDir: 'junit-results',
+            outputFileFormat: ({ cid }: { cid: string }) => `wdio-${cid}.xml`,
+        }],
+    ],
 
     // ============
     // Specs

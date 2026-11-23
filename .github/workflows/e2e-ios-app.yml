@@ -43,3 +43,13 @@ jobs:
                   SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
                   SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
               run: npm run ios.sauce.simulators.app.eu
+
+            - name: Upload iOS test reports
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ios-test-reports
+                  path: |
+                      junit-results/
+                      allure-results/
+                  if-no-files-found: warn
