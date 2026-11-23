@@ -100,6 +100,27 @@ export async function relaunchApp(identifier:string) {
 
 }
 
+/**
+ * Send the demo app to the background without terminating its process.
+ */
+export async function sendAppToBackground() {
+    if (driver.isAndroid) {
+        await driver.pressKeyCode(3);
+        return;
+    }
+
+    await driver.execute('mobile: pressButton', { name: 'home' });
+}
+
+/**
+ * Return to the existing app process without terminating or relaunching it.
+ */
+export async function activateDemoApp(identifier:string) {
+    await driver.execute(`mobile: ${driver.isAndroid ? 'activateApp' : 'launchApp'}`, {
+        [driver.isAndroid ? 'appId' : 'bundleId']: identifier,
+    });
+}
+
 type AppInfo = {
     processArguments: {
         env: { [key: string]: any };

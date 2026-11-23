@@ -11,6 +11,7 @@ export const config: WebdriverIO.Config = {
     specs: ["../tests/features/**/*.feature"],
     framework: "cucumber",
     cucumberOpts: {
+        tags: "@ios",
         require: [
             path.join(
                 __dirname,

@@ -1,3 +1,4 @@
+@android @ios
 Feature: Signup
 
     Scenario: Successful Signup

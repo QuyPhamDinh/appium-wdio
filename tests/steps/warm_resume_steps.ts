@@ -46,13 +46,6 @@ Given('the form switch is initially on', async () => {
     await expect(await FormsScreen.isSwitchActive()).toBe(true);
 });
 
-Given('the form switch is on', async () => {
-    if (!(await FormsScreen.isSwitchActive())) {
-        await FormsScreen.tapOnSwitch();
-    }
-    await expect(await FormsScreen.isSwitchActive()).toBe(true);
-});
-
 When('I turn off the form switch', async () => {
     if (await FormsScreen.isSwitchActive()) {
         await FormsScreen.tapOnSwitch();

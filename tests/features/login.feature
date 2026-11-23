@@ -1,3 +1,4 @@
+@android @ios
 Feature: Login
 
     Scenario: Successful Login

@@ -24,6 +24,7 @@ export const config: WebdriverIO.Config = {
     // You also need to specify where your step definitions are located.
     // See also: https://github.com/webdriverio/webdriverio/tree/main/packages/wdio-cucumber-framework#cucumberopts-options
     cucumberOpts: {
+        tags: "@android",
         require: [
             path.join(
                 __dirname,
