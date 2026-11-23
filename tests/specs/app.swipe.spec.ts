@@ -10,28 +10,24 @@ describe('WebdriverIO and Appium, when using swiping', () => {
     });
 
     it('should be able to swipe horizontal by swiping the carousel from left to right', async () => {
-        await Carousel.waitForCardActive(Carousel.openSourceCard);
-
-        for (const card of [
+        const cards = [
+            'openSourceCard',
             'communityCard',
             'jsFoundationCard',
             'supportVideosCard',
             'extendableCard',
             'compatibleCard',
-        ] as const) {
-            await Carousel.swipeLeft();
-            await Carousel.waitForCardActive(Carousel[card]);
+        ] as const;
+
+        await Carousel.waitForCardActive(Carousel[cards[0]]);
+        for (let index = 1; index < cards.length; index++) {
+            await Carousel.swipeLeft(Carousel[cards[index - 1]]);
+            await Carousel.waitForCardActive(Carousel[cards[index]]);
         }
 
-        for (const card of [
-            'extendableCard',
-            'supportVideosCard',
-            'jsFoundationCard',
-            'communityCard',
-            'openSourceCard',
-        ] as const) {
-            await Carousel.swipeRight();
-            await Carousel.waitForCardActive(Carousel[card]);
+        for (let index = cards.length - 2; index >= 0; index--) {
+            await Carousel.swipeRight(Carousel[cards[index + 1]]);
+            await Carousel.waitForCardActive(Carousel[cards[index]]);
         }
     });
 

@@ -81,25 +81,29 @@ class Carousel {
     /**
      * Swipe the carousel to the LEFT (from right to left)
      */
-    async swipeLeft() {
-        await this.swipe('left');
+    async swipeLeft(activeCard: ChainablePromiseElement) {
+        await this.swipe('left', activeCard);
     }
 
     /**
      * Swipe the carousel to the RIGHT (from left to right)
      */
-    async swipeRight() {
-        await this.swipe('right');
+    async swipeRight(activeCard: ChainablePromiseElement) {
+        await this.swipe('right', activeCard);
     }
 
-    private async swipe(direction: 'left' | 'right') {
+    private async swipe(direction: 'left' | 'right', activeCard: ChainablePromiseElement) {
         if (driver.isAndroid) {
-            const elementId = await this.carousel.elementId;
-            const { width } = await driver.getElementRect(elementId);
+            const { x, y, width, height } = await driver.getElementRect(await activeCard.elementId);
+            // UiAutomator2 starts the swipe at the edge of its gesture area.
+            const inset = Math.round(width * 0.1);
             await driver.execute('mobile: swipeGesture', {
-                elementId,
+                left: x + inset,
+                top: y,
+                width: width - 2 * inset,
+                height,
                 direction,
-                percent: 0.65,
+                percent: 1,
                 speed: Math.round(width * 2),
             });
             return;
