@@ -12,22 +12,7 @@ export const config: WebdriverIO.Config = {
     framework: "cucumber",
     cucumberOpts: {
         tags: "@ios",
-        require: [
-            path.join(
-                __dirname,
-                "..",
-                "tests",
-                "steps",
-                "login_and_signup_steps.ts"
-            ),
-            path.join(
-                __dirname,
-                "..",
-                "tests",
-                "steps",
-                "warm_resume_steps.ts"
-            ),
-        ],
+        require: [path.join(__dirname, "..", "tests", "steps", "**", "*.ts")],
         backtrace: false,
         compiler: [],
         dryRun: false,

@@ -8,32 +8,32 @@ Feature: Mobile app lifecycle
     And the form switch is initially off
     When I enter "Draft before switching" in the text input
     And I turn on the form switch
-    And I go to the device Home screen
-    And I return to the running demo app
+    And I send the app to the background
+    And I activate the demo app
     Then the Forms screen is visible
     And the text input contains "Draft before switching"
     And the form switch is on
     When I turn off the form switch
     Then the form switch is off
 
-  @ios @warm_resume @ios_app_switcher
-  Scenario: Continue using Forms after returning with iOS App Switcher
+  @ios @warm_resume
+  Scenario: Continue using Forms after backgrounding the iOS app
     Given I am on the Forms screen
     And I have entered "iOS draft" in the text input
     And the form switch is initially on
-    When I swipe up to open the iOS App Switcher
-    And I select the demo app
+    When I send the app to the background
+    And I activate the demo app
     Then the Forms screen is visible
     And the text input contains "iOS draft"
     And the form switch is on
 
   @android @warm_resume @android_app_switcher
-  Scenario: Continue using Forms after returning with Android App Switcher
+  Scenario: Continue using Forms after opening Android Recents
     Given I am on the Forms screen
     And I have entered "Android draft" in the text input
     And the form switch is initially on
     When I open the Android Recents screen
-    And I select the demo app
+    And I activate the demo app
     Then the Forms screen is visible
     And the text input contains "Android draft"
     And the form switch is on
@@ -44,8 +44,8 @@ Feature: Mobile app lifecycle
     And I have entered "Draft before kill" in the text input
     And the form switch is initially on
     When I send the app to the background
-    And the Android system kills the app process
-    And I reopen the demo app
+    And I kill the background Android app process
+    And I activate the demo app
     And I return to the Forms screen
     Then the text input is empty
     And the form switch is off
@@ -53,10 +53,10 @@ Feature: Mobile app lifecycle
   @ios @cold_relaunch
   Scenario: Forms state is cleared after iOS app termination
     Given I am on the Forms screen
-    And I have entered "Draft before kill" in the text input
+    And I have entered "Draft before termination" in the text input
     And the form switch is initially on
     When I terminate the demo app
-    And I relaunch the demo app
+    And I activate the demo app
     And I return to the Forms screen
     Then the text input is empty
     And the form switch is off

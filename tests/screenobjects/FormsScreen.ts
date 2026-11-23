@@ -27,6 +27,16 @@ class FormsScreen extends AppScreen {
         await this.switch.click();
     }
 
+    async setSwitch(on: boolean) {
+        if (await this.isSwitchActive() !== on) {
+            await this.tapOnSwitch();
+        }
+        await driver.waitUntil(async () => await this.isSwitchActive() === on, {
+            timeout: 5000,
+            timeoutMsg: `The Forms switch did not turn ${on ? 'on' : 'off'}`,
+        });
+    }
+
     async tapOnDropDown() {
         // The tap action on the complete dropdown doesn't work on iOS, we need to
         // tap on the chevron to open it

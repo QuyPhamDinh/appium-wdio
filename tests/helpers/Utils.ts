@@ -1,4 +1,4 @@
-import { BUNDLE_ID } from "./Constants.js";
+import { BUNDLE_ID, PACKAGE_NAME } from "./Constants.js";
 
 /**
  * Get the time difference in seconds
@@ -113,7 +113,14 @@ export async function sendAppToBackground() {
 }
 
 /**
- * Return to the existing app process without terminating or relaunching it.
+ * Get the demo app identifier for the current platform.
+ */
+export function getAppId(): string {
+    return driver.isAndroid ? PACKAGE_NAME : BUNDLE_ID;
+}
+
+/**
+ * Activate the demo app, starting it if needed.
  */
 export async function activateDemoApp(identifier:string) {
     await driver.execute(`mobile: ${driver.isAndroid ? 'activateApp' : 'launchApp'}`, {

@@ -25,22 +25,7 @@ export const config: WebdriverIO.Config = {
     // See also: https://github.com/webdriverio/webdriverio/tree/main/packages/wdio-cucumber-framework#cucumberopts-options
     cucumberOpts: {
         tags: "@android",
-        require: [
-            path.join(
-                __dirname,
-                "..",
-                "tests",
-                "steps",
-                "login_and_signup_steps.ts"
-            ),
-            path.join(
-                __dirname,
-                "..",
-                "tests",
-                "steps",
-                "warm_resume_steps.ts"
-            ),
-        ], // <string[]> (file/dir) require files before executing features
+        require: [path.join(__dirname, "..", "tests", "steps", "**", "*.ts")],
         backtrace: false, // <boolean> show full backtrace for errors
         compiler: [], // <string[]> ("extension:module") require files with the given EXTENSION after requiring MODULE (repeatable)
         dryRun: false, // <boolean> invoke formatters without executing steps
