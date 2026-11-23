@@ -10,38 +10,29 @@ describe('WebdriverIO and Appium, when using swiping', () => {
     });
 
     it('should be able to swipe horizontal by swiping the carousel from left to right', async () => {
-        /**
-         * To understand what happens in `isCardActive()` please check the method
-         */
-        await expect(await Carousel.isCardActive(await Carousel.openSourceCard)).toBeTruthy();
+        await Carousel.waitForCardActive(Carousel.openSourceCard);
 
-        /**
-         * To understand what happens in `swipeLeft()` please check the method
-         */
-        await Carousel.swipeLeft();
-        await expect(await Carousel.isCardActive(await Carousel.communityCard)).toBeTruthy();
+        for (const card of [
+            'communityCard',
+            'jsFoundationCard',
+            'supportVideosCard',
+            'extendableCard',
+            'compatibleCard',
+        ] as const) {
+            await Carousel.swipeLeft();
+            await Carousel.waitForCardActive(Carousel[card]);
+        }
 
-        await Carousel.swipeLeft();
-        await expect(await Carousel.isCardActive(await Carousel.jsFoundationCard)).toBeTruthy();
-
-        await Carousel.swipeLeft();
-        await expect(await Carousel.isCardActive(await Carousel.supportVideosCard)).toBeTruthy();
-
-        await Carousel.swipeLeft();
-        await Carousel.swipeLeft();
-        await expect(await Carousel.isCardActive(await Carousel.compatibleCard)).toBeTruthy();
-
-        /**
-         * To understand what happens in `swipeRight()` please check the method
-         */
-        await Carousel.swipeRight();
-        await expect(await Carousel.isCardActive(await Carousel.extendableCard)).toBeTruthy();
-
-        await Carousel.swipeRight();
-        await Carousel.swipeRight();
-        await Carousel.swipeRight();
-        await Carousel.swipeRight();
-        await expect(await Carousel.isCardActive(await Carousel.openSourceCard)).toBeTruthy();
+        for (const card of [
+            'extendableCard',
+            'supportVideosCard',
+            'jsFoundationCard',
+            'communityCard',
+            'openSourceCard',
+        ] as const) {
+            await Carousel.swipeRight();
+            await Carousel.waitForCardActive(Carousel[card]);
+        }
     });
 
     it('should be able to swipe vertical by finding the surprise', async () => {

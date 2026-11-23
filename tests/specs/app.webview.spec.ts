@@ -99,7 +99,7 @@ describe("WebdriverIO and Appium, when interacting with a WebView,", () => {
             await TabBar.openSwipe();
             await SwipeScreen.waitForIsShown();
 
-            // Now go back to the webview. It will automatically open in the previous state
+            // Return to the WebView and wait for DocSearch to be usable again.
             await TabBar.openWebView();
             // To be able to use the site in the webview webdriver.io first needs
             // change the context from native to webview
@@ -109,19 +109,23 @@ describe("WebdriverIO and Appium, when interacting with a WebView,", () => {
                 title: /WebdriverIO.*/,
                 url: 'https://webdriver.io/',
             });
-            // Search for the OCR service
-            await $(".DocSearch-Input").setValue(
-                "ocr service for appium native apps"
+            const searchInput = $('.DocSearch-Input');
+            const searchButton = $('.DocSearch-Button');
+            await driver.waitUntil(
+                async () => await searchInput.isClickable() || await searchButton.isClickable(),
+                { timeoutMsg: 'DocSearch did not become usable after returning to the WebView' },
             );
-            await driver.waitUntil(async () =>
-                (await $(".DocSearch-HitsFooter").getText()).includes("See all")
-            );
-            // Let's take the first result
-            await $("#docsearch-hits0-item-0 a").click();
+            if (!(await searchInput.isClickable())) {
+                await searchButton.click();
+            }
+            await searchInput.waitForClickable();
+            await searchInput.click();
+            await searchInput.setValue('OCR Testing');
+            const ocrResult = $('.DocSearch-Hit a[href*="/docs/ocr-testing/ocr-testing"]');
+            await ocrResult.waitForClickable();
+            await ocrResult.click();
 
-            // Now wait for the header to be displayed and verify that we are on the correct page
-            await $("header h1").waitForDisplayed({ timeout: 3000 });
-            await expect(await $("header h1").getText()).toContain("OCR Testing");
+            await expect($('header h1')).toHaveText('OCR Testing');
         });
     }
 });

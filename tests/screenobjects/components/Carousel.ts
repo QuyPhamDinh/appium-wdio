@@ -53,6 +53,17 @@ class Carousel {
         return cardRectangles.x === 0;
     }
 
+    async waitForCardActive(card: ChainablePromiseElement) {
+        const selector = await card.selector;
+        await driver.waitUntil(async () => {
+            const currentCard = $(selector);
+            return await currentCard.isExisting() && await this.isCardActive(currentCard);
+        }, {
+            timeout: 5000,
+            timeoutMsg: `Carousel card ${selector} did not become active`,
+        });
+    }
+
     /**
      * Get the carousel position and size
      */
@@ -71,21 +82,31 @@ class Carousel {
      * Swipe the carousel to the LEFT (from right to left)
      */
     async swipeLeft() {
-        // This uses the "new" `swipe` method that now supports native apps
-        await driver.swipe({
-            direction: "left",
-            scrollableElement: this.carousel,
-            percent: 0.8,
-        });
+        await this.swipe('left');
     }
 
     /**
      * Swipe the carousel to the RIGHT (from left to right)
      */
     async swipeRight() {
-        // This uses the "new" `swipe` method that now supports native apps
+        await this.swipe('right');
+    }
+
+    private async swipe(direction: 'left' | 'right') {
+        if (driver.isAndroid) {
+            const elementId = await this.carousel.elementId;
+            const { width } = await driver.getElementRect(elementId);
+            await driver.execute('mobile: swipeGesture', {
+                elementId,
+                direction,
+                percent: 0.65,
+                speed: Math.round(width * 2),
+            });
+            return;
+        }
+
         await driver.swipe({
-            direction: "right",
+            direction,
             scrollableElement: this.carousel,
             percent: 0.8,
         });
