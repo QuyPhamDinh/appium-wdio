@@ -66,6 +66,8 @@ The local Android app configs default to `Pixel 10` on Android `17.0` with UDID 
 ANDROID_DEVICE_NAME="Pixel 8" ANDROID_PLATFORM_VERSION="15.0" ANDROID_UDID="emulator-5556" npm run android.app
 ```
 
+The [Functional Android App Tests workflow](./.github/workflows/e2e-android-app.yml) runs `npm run android.app` on a GitHub-hosted Android 15 emulator. It runs on pull requests and pushes to `main`, and supports manual runs from the Actions tab. The `android-test-reports` artifact contains any JUnit and Allure results produced by the job.
+
 ### iOS Simulator
 
 Install Xcode and an iOS Simulator runtime, then run the local iOS app suite:

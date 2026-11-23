@@ -6,69 +6,48 @@ on:
         branches:
             - main
     pull_request:
-    pull_request_target:
+
+permissions:
+    contents: read
 
 jobs:
     android-app:
         runs-on: ubuntu-latest
-        # Src: https://hugo.alliau.me/posts/2021-05-04-migration-to-github-native-dependabot-solutions-for-auto-merge-and-action-secrets.html#share-your-secrets-with-dependabot
-        # If the PR is coming from a fork (pull_request_target), ensure it's opened by "dependabot[bot]".
-        # Otherwise, clone it normally.
-        if: |
-            github.event_name == 'push' ||
-            github.event_name == 'workflow_dispatch' ||
-            github.event_name == 'pull_request' ||
-            (github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]')
+        timeout-minutes: 30
+        env:
+            ANDROID_DEVICE_NAME: Pixel 7 Pro
+            ANDROID_PLATFORM_VERSION: '15.0'
+            ANDROID_UDID: emulator-5554
         steps:
-            - name: ⬇️ Checkout Repository
-              if: ${{ github.event_name != 'pull_request_target' }}
-              uses: actions/checkout@v4
-
-            - name: ⬇️ Checkout PR Repository
-              if: ${{ github.event_name == 'pull_request_target' }}
-              uses: actions/checkout@v4
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
-                  ref: ${{ github.event.pull_request.head.sha }}
+                  node-version: '22'
+                  cache: npm
+            - run: npm ci
 
-            - name: 🟢 Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version-file: ".nvmrc"
-
-            - name: 🧩 Install Dependencies
-              run: |
-                  npm ci
-
-            - name: Check for excluded dependencies
-              id: check-deps
-              if: github.actor == 'dependabot[bot]'
-              run: |
-                  if echo "${{ github.event.pull_request.title }}" | grep -Eq "appium|appium-uiautomator2-driver|appium-xcuitest-driver"; then
-                    echo "Skipping tests due to dependency update"
-                    echo "skip=true" >> $GITHUB_OUTPUT
-                  fi
-
-            - name: 📦 Download app
-              if: steps.check-deps.outputs.skip != 'true'
+            - name: Download Android demo app
               run: |
                   mkdir -p apps
-                  wget https://github.com/webdriverio/native-demo-app/releases/download/v2.0.0/android.wdio.native.app.v2.0.0.apk -P apps
+                  curl --fail --silent --show-error --location \
+                    https://github.com/webdriverio/native-demo-app/releases/download/v2.2.0/android.wdio.native.app.v2.2.0.apk \
+                    --output apps/android.wdio.native.app.v2.2.0.apk
 
-            - name: 📬 Upload App to Sauce Labs
-              if: steps.check-deps.outputs.skip != 'true'
+            - name: Enable KVM access
               run: |
-                  curl -v \
-                      -F "payload=@./apps/android.wdio.native.app.v2.0.0.apk" \
-                      -F name=wdio-demo-app-android.apk \
-                      -u "${{ secrets.SAUCE_USERNAME }}:${{ secrets.SAUCE_ACCESS_KEY }}" \
-                      'https://api.eu-central-1.saucelabs.com/v1/storage/upload'
+                  echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+                  sudo udevadm control --reload-rules
+                  sudo udevadm trigger --name-match=kvm
 
-            - name: 📲 Run Tests on an Android Emulator
-              if: steps.check-deps.outputs.skip != 'true'
-              env:
-                  SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-                  SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-              run: npm run android.sauce.emulators.app.eu
+            - name: Run Android app tests
+              uses: reactivecircus/android-emulator-runner@v2
+              with:
+                  api-level: 35
+                  target: google_apis
+                  arch: x86_64
+                  profile: pixel_7_pro
+                  disable-animations: true
+                  script: npm run android.app
 
             - name: Upload Android test reports
               if: always()

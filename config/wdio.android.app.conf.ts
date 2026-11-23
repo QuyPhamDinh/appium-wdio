@@ -3,6 +3,15 @@ import { config as baseConfig } from "./wdio.shared.local.appium.conf.js";
 
 export const config: WebdriverIO.Config = {
     ...baseConfig,
+    // UiAutomator2 runs against the Android device without a local display server.
+    autoXvfb: false,
+    reporters: [
+        ...(baseConfig.reporters ?? []),
+        ['junit', {
+            outputDir: 'junit-results',
+            outputFileFormat: ({ cid }: { cid: string }) => `wdio-${cid}.xml`,
+        }],
+    ],
 
     // ============
     // Specs
