@@ -4,6 +4,13 @@ const buildName = `WebdriverIO Native Demo app, Android Emulators: ${new Date().
 
 export const config: WebdriverIO.Config = {
     ...baseConfig,
+    reporters: [
+        ...(baseConfig.reporters ?? []),
+        ['junit', {
+            outputDir: 'junit-results',
+            outputFileFormat: ({ cid }: { cid: string }) => `wdio-${cid}.xml`,
+        }],
+    ],
 
     // ============
     // Specs
