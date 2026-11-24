@@ -1,10 +1,28 @@
+import { randomUUID } from 'node:crypto';
+import { mkdir } from 'node:fs/promises';
 import { join } from "node:path";
+import type { Services } from '@wdio/types';
 import { config as baseConfig } from "./wdio.shared.local.appium.conf.js";
 
 const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
 const isAppPreinstalled = isGitHubActions && process.env.IOS_APP_PREINSTALLED === 'true';
 const simulatorUdid = process.env.IOS_UDID;
 const wdaDerivedDataPath = process.env.IOS_WDA_DERIVED_DATA_PATH;
+
+const captureFailureScreenshot: NonNullable<Services.HookFunctions['afterTest']> = async (test, _context, { error }) => {
+    if (!error) {
+        return;
+    }
+
+    const directory = join('logs', 'screenshots');
+    const title = test?.title?.replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 100) || 'failure';
+    try {
+        await mkdir(directory, { recursive: true });
+        await driver.saveScreenshot(join(directory, `${title}-${randomUUID()}.png`));
+    } catch (captureError) {
+        console.warn(`Could not save a screenshot for ${title}`, captureError);
+    }
+};
 
 export const config: WebdriverIO.Config = {
     ...baseConfig,
@@ -13,6 +31,8 @@ export const config: WebdriverIO.Config = {
         connectionRetryCount: 0,
         specFileRetries: 1,
         specFileRetriesDelay: 5,
+        afterTest: captureFailureScreenshot,
+        afterHook: captureFailureScreenshot,
     }),
 
     // ============

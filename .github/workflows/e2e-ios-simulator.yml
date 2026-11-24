@@ -73,6 +73,5 @@ jobs:
                   name: ios-simulator-test-reports
                   path: |
                       allure-results/
-                      logs/appium.log
-                      logs/wda-build.log
+                      logs/
                   if-no-files-found: warn
