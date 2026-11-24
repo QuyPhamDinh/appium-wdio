@@ -11,6 +11,8 @@ export const config: WebdriverIO.Config = {
     ...(isGitHubActions && {
         connectionRetryTimeout: isAppPreinstalled ? 420000 : 300000,
         connectionRetryCount: 0,
+        specFileRetries: 1,
+        specFileRetriesDelay: 5,
     }),
 
     // ============

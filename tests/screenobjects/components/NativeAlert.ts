@@ -1,3 +1,5 @@
+const ALERT_TIMEOUT = process.env.GITHUB_ACTIONS === 'true' ? 20000 : 11000;
+
 const SELECTORS = {
     ANDROID: {
         ALERT_TITLE: '*//android.widget.TextView[@resource-id="com.wdiodemoapp:id/alert_title"]',
@@ -21,25 +23,32 @@ class NativeAlert {
             : SELECTORS.IOS.ALERT;
 
         return $(selector).waitForExist({
-            timeout: 11000,
+            timeout: ALERT_TIMEOUT,
             reverse: !isShown,
         });
     }
 
     /**
-     * Press a button in a cross-platform way.
-     *
-     * IOS:
-     *  iOS always has an accessibilityID so use the `~` in combination
-     *  with the name of the button as shown on the screen
-     * ANDROID:
-     *  Use the text of the button, provide a string and it will automatically transform it to uppercase
-     *  and click on the button
+     * Press a native alert button by its label.
      */
     static async topOnButtonWithText (selector: string) {
-        const buttonSelector = driver.isAndroid
-            ? SELECTORS.ANDROID.ALERT_BUTTON.replace(/{BUTTON_TEXT}/, selector.toUpperCase())
-            : `~${selector}`;
+        if (driver.isIOS) {
+            // Retry a missed tap and confirm the alert has closed.
+            await driver.waitUntil(async () => {
+                if (!(await $(SELECTORS.IOS.ALERT).isExisting())) {
+                    return true;
+                }
+                await driver.execute('mobile: alert', { action: 'accept', buttonLabel: selector });
+                return false;
+            }, {
+                timeout: ALERT_TIMEOUT,
+                interval: 1000,
+                timeoutMsg: `iOS alert still present after trying to press "${selector}"`,
+            });
+            return;
+        }
+
+        const buttonSelector = SELECTORS.ANDROID.ALERT_BUTTON.replace(/{BUTTON_TEXT}/, selector.toUpperCase());
         await $(buttonSelector).click();
     }
 
