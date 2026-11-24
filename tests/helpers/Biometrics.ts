@@ -26,30 +26,22 @@ class Biometrics {
      * Submit iOS biometric login
      */
     async submitIosBiometricLogin(successful: boolean) {
-        await this.allowIosBiometricUsage();
-
-        return driver.touchId(successful);
-    }
-
-    /**
-     * Allow biometric usage on iOS if it isn't already accepted
-     */
-    async allowIosBiometricUsage() {
-        // When Touch/FaceID is used for the first time it could be that an alert is shown which needs to be accepted
-        //
-        // NOTE:
-        // With `appium-xcuitest-driver` V6 and higher this alert can't by default be detected by Appium. To work around this
-        // we switch to the home screen context and accept the alert there.
-        // This is a workaround for the issue described here:
-        // - https://github.com/appium/appium/issues/19716
-        await executeInHomeScreenContext(async () => {
-            try {
-                await this.iosAllowBiometry.waitForDisplayed({ timeout: 3 * 1000 });
-                await this.allowBiometry.click();
-            } catch (e) {
-                // This means that allow using touch/facID has already been accepted and thus the alert is not shown
-            }
+        const type = await executeInHomeScreenContext(async () => {
+            const prompt = $('-ios predicate string:type == "XCUIElementTypeStaticText" AND (name == "Face ID" OR name BEGINSWITH "Touch ID")');
+            await driver.waitUntil(async () => {
+                if (await this.iosAllowBiometry.isDisplayed()) {
+                    await this.allowBiometry.click();
+                    return false;
+                }
+                return prompt.isDisplayed();
+            }, {
+                timeout: 10000,
+                interval: 250,
+                timeoutMsg: 'The iOS biometric authentication prompt did not appear',
+            });
+            return (await prompt.getAttribute('name')) === 'Face ID' ? 'faceId' : 'touchId';
         });
+        await driver.execute('mobile: sendBiometricMatch', { type, match: successful });
     }
 
     /**

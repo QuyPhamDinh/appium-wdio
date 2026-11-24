@@ -149,7 +149,7 @@ type AppInfo = {
  * post-interaction.
  * Src: https://appium.github.io/appium-xcuitest-driver/latest/guides/troubleshooting/#interact-with-dialogs-managed-by-comapplespringboard
  */
-export async function executeInHomeScreenContext(action:() => Promise<void>): Promise<any> {
+export async function executeInHomeScreenContext<T>(action: () => Promise<T>): Promise<T> {
     // For Android, directly execute the action as this workaround isn't necessary
     if (driver.isAndroid) {
         return action();
@@ -159,17 +159,9 @@ export async function executeInHomeScreenContext(action:() => Promise<void>): Pr
     const activeAppInfo: AppInfo = await driver.execute('mobile: activeAppInfo');
     // Switch the active context to the iOS home screen
     await driver.updateSettings({ 'defaultActiveApplication': 'com.apple.springboard' });
-    let result;
-
     try {
-        // Execute the action in the home screen context
-        result = await action();
-    } catch (e) {
-        // Ignore any exceptions during the action
+        return await action();
+    } finally {
+        await driver.updateSettings({ 'defaultActiveApplication': activeAppInfo.bundleId });
     }
-
-    // Revert to the original app context
-    await driver.updateSettings({ 'defaultActiveApplication': activeAppInfo.bundleId });
-
-    return result;
 }

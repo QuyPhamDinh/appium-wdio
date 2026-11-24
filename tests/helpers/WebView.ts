@@ -1,4 +1,4 @@
-import { PACKAGE_NAME } from './Constants.js';
+import { BUNDLE_ID, PACKAGE_NAME } from './Constants.js';
 
 export const CONTEXT_REF = {
     NATIVE_APP: 'NATIVE_APP',
@@ -69,7 +69,9 @@ class WebView {
             for (const entry of contexts) {
                 const context = entry as ContextInterface;
                 if (driver.isIOS) {
-                    if ((entry as IosContext).bundleId === 'process-wdiodemoapp' && context.url !== 'about:blank') {
+                    const { bundleId } = entry as IosContext;
+                    if ((bundleId === BUNDLE_ID || bundleId === 'process-wdiodemoapp') &&
+                        context.url?.startsWith('https://webdriver.io/')) {
                         selectedContext = { id: context.id };
                         return true;
                     }

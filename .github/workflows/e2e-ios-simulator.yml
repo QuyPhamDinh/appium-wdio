@@ -1,0 +1,49 @@
+name: iOS App Tests (GitHub Simulator)
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+    pull_request:
+
+permissions:
+    contents: read
+
+jobs:
+    ios-app:
+        runs-on: macos-15
+        timeout-minutes: 30
+        env:
+            DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+            IOS_DEVICE_NAME: iPhone 16 Pro
+            IOS_PLATFORM_VERSION: '18.5'
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+                  cache: npm
+            - run: npm ci
+
+            - name: Download iOS simulator demo app
+              run: |
+                  mkdir -p apps
+                  curl --fail --silent --show-error --location \
+                    https://github.com/webdriverio/native-demo-app/releases/download/v2.2.0/ios.simulator.wdio.native.app.v2.2.0.zip \
+                    --output "$RUNNER_TEMP/wdio-ios.zip"
+                  ditto -x -k "$RUNNER_TEMP/wdio-ios.zip" apps
+                  test -d apps/wdiodemoapp.app
+
+            - name: Run iOS app tests
+              run: npm run ios.app
+
+            - name: Upload iOS test reports and logs
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ios-simulator-test-reports
+                  path: |
+                      allure-results/
+                      logs/appium.log
+                  if-no-files-found: warn

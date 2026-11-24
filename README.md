@@ -82,6 +82,8 @@ The default simulator is `iPhone 16 Pro` on iOS `18.2`. Override them when neede
 IOS_DEVICE_NAME="iPhone 16" IOS_PLATFORM_VERSION="26.0" npm run ios.app
 ```
 
+The [iOS App Tests (GitHub Simulator) workflow](./.github/workflows/e2e-ios-simulator.yml) runs the same suite on a GitHub-hosted iPhone 16 Pro simulator with iOS 18.5. It runs on pull requests, pushes to `main`, and manual dispatches from the Actions tab. The `ios-simulator-test-reports` artifact contains any Allure results and Appium logs produced by the job.
+
 ### App lifecycle scenarios
 
 [The lifecycle feature](./tests/features/warm_resume.feature) checks that Forms state survives backgrounding and reactivation. It also covers Android Recents, Android process death via `am kill`, and iOS termination and relaunch.
@@ -93,7 +95,7 @@ npm run android.app.cucumber -- --spec tests/features/warm_resume.feature
 npm run ios.app.cucumber -- --spec tests/features/warm_resume.feature
 ```
 
-Each command selects scenarios tagged for its platform. The [Mobile Lifecycle Tests workflow](./.github/workflows/e2e-mobile-lifecycle.yml) also runs this feature on pull requests using a GitHub-hosted Android emulator and iOS simulator. It requires no Sauce Labs credentials. To run it manually once the workflow is on the default branch, go to **Actions → Mobile Lifecycle Tests → Run workflow**.
+Each command selects scenarios tagged for its platform. The [Mobile Lifecycle Tests workflow](./.github/workflows/e2e-mobile-lifecycle.yml) runs this feature on a GitHub-hosted Android emulator and iOS simulator on pull requests and pushes to `main`. It requires no Sauce Labs credentials. To run it manually once the workflow is on the default branch, go to **Actions → Mobile Lifecycle Tests → Run workflow**.
 
 ### Allure report
 
