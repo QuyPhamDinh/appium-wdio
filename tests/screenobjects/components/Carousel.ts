@@ -47,17 +47,18 @@ class Carousel {
      * We can validate which card is active by checking if it is fully visible.
      * This can be done by checking if the card has position x=0.
      */
-    async isCardActive(card: ChainablePromiseElement) {
+    async isCardActive(card: ChainablePromiseElement, expectedWidth?: number) {
         const cardRectangles = await driver.getElementRect(await card.elementId);
 
-        return cardRectangles.x === 0;
+        return cardRectangles.x === 0 &&
+            (expectedWidth === undefined || Math.abs(cardRectangles.width - expectedWidth) <= 1);
     }
 
-    async waitForCardActive(card: ChainablePromiseElement) {
+    async waitForCardActive(card: ChainablePromiseElement, expectedWidth?: number) {
         const selector = await card.selector;
         await driver.waitUntil(async () => {
             const currentCard = $(selector);
-            return await currentCard.isExisting() && await this.isCardActive(currentCard);
+            return await currentCard.isExisting() && await this.isCardActive(currentCard, expectedWidth);
         }, {
             timeout: 5000,
             timeoutMsg: `Carousel card ${selector} did not become active`,
@@ -78,23 +79,40 @@ class Carousel {
         return CAROUSEL_RECTANGLES;
     }
 
-    /**
-     * Swipe the carousel to the LEFT (from right to left)
-     */
-    async swipeLeft(activeCard: ChainablePromiseElement) {
-        await this.swipe('left', activeCard);
+    async swipeToCard(direction: 'left' | 'right', activeCard: ChainablePromiseElement, targetCard: ChainablePromiseElement) {
+        const activeBounds = driver.isAndroid ? await driver.getElementRect(await activeCard.elementId) : undefined;
+        await this.swipe(direction, activeBounds);
+        try {
+            await this.waitForCardActive(targetCard, activeBounds?.width);
+            return;
+        } catch (error) {
+            const targetSelector = await targetCard.selector;
+            if (!activeBounds || !(error instanceof Error) ||
+                error.message !== `Carousel card ${targetSelector} did not become active`) {
+                throw error;
+            }
+
+            const activeSelector = await activeCard.selector;
+            let stableSamples = 0;
+            await driver.waitUntil(async () => {
+                const previousCard = $(activeSelector);
+                const stillActive = await previousCard.isExisting() && await this.isCardActive(previousCard, activeBounds.width);
+                stableSamples = stillActive ? stableSamples + 1 : 0;
+                return stableSamples === 2;
+            }, {
+                interval: 300,
+                timeout: 1000,
+                timeoutMsg: `Could not safely retry swipe to ${targetSelector} because the previous card moved`,
+            });
+            console.warn(`Retrying swipe to ${targetSelector} after the previous card stayed active`);
+            await this.swipe(direction, activeBounds);
+            await this.waitForCardActive(targetCard, activeBounds.width);
+        }
     }
 
-    /**
-     * Swipe the carousel to the RIGHT (from left to right)
-     */
-    async swipeRight(activeCard: ChainablePromiseElement) {
-        await this.swipe('right', activeCard);
-    }
-
-    private async swipe(direction: 'left' | 'right', activeCard: ChainablePromiseElement) {
-        if (driver.isAndroid) {
-            const { x, y, width, height } = await driver.getElementRect(await activeCard.elementId);
+    private async swipe(direction: 'left' | 'right', activeBounds?: RectReturn) {
+        if (activeBounds) {
+            const { x, y, width, height } = activeBounds;
             // UiAutomator2 starts the swipe at the edge of its gesture area.
             const inset = Math.round(width * 0.1);
             await driver.execute('mobile: swipeGesture', {

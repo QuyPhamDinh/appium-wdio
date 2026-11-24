@@ -21,13 +21,11 @@ describe('WebdriverIO and Appium, when using swiping', () => {
 
         await Carousel.waitForCardActive(Carousel[cards[0]]);
         for (let index = 1; index < cards.length; index++) {
-            await Carousel.swipeLeft(Carousel[cards[index - 1]]);
-            await Carousel.waitForCardActive(Carousel[cards[index]]);
+            await Carousel.swipeToCard('left', Carousel[cards[index - 1]], Carousel[cards[index]]);
         }
 
         for (let index = cards.length - 2; index >= 0; index--) {
-            await Carousel.swipeRight(Carousel[cards[index + 1]]);
-            await Carousel.waitForCardActive(Carousel[cards[index]]);
+            await Carousel.swipeToCard('right', Carousel[cards[index + 1]], Carousel[cards[index]]);
         }
     });
 
