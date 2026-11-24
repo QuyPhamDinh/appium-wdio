@@ -13,7 +13,7 @@ describe("WebdriverIO and Appium, when interacting with form elements,", () => {
     it("should be able type in the input and validate the text", async () => {
         const text = "Hello, this is a demo app";
 
-        await FormScreen.input.setValue(text);
+        await FormScreen.typeInput(text);
         await expect(FormScreen.inputTextResult).toHaveText(
             expect.stringContaining(text)
         );

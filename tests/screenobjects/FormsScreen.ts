@@ -1,4 +1,5 @@
 import AppScreen from './AppScreen.js';
+import { typeText } from '../helpers/Utils.js';
 
 const SELECTORS = {
     SCREEN: '~Forms-screen',
@@ -18,6 +19,18 @@ class FormsScreen extends AppScreen {
     get dropDownChevron() { return $('~dropdown-chevron'); }
     get activeButton () {return $('~button-Active');}
     get inActiveButton () {return $('~button-Inactive');}
+
+    async typeInput(text: string): Promise<void> {
+        const input = this.input;
+        await typeText(input, text);
+
+        if (text === '') {
+            await expect(await this.isInputEmpty()).toBe(true);
+            return;
+        }
+
+        await expect(input).toHaveText(text, { trim: false });
+    }
 
     async isInputEmpty(): Promise<boolean> {
         if (driver.isAndroid) {

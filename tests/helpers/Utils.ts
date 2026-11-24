@@ -1,5 +1,30 @@
 import { BUNDLE_ID, PACKAGE_NAME } from "./Constants.js";
 
+export async function typeText(element: ChainablePromiseElement, text: string): Promise<void> {
+    if (!driver.isIOS) {
+        await element.setValue(text);
+        return;
+    }
+
+    // Bulk typing on iOS can drop characters.
+    await element.clearValue();
+    if (text === '') {
+        return;
+    }
+
+    await element.click();
+    let expectedText = '';
+    for (const character of text) {
+        await element.addValue(character);
+        expectedText += character;
+        await expect(element).toHaveText(expectedText, {
+            trim: false,
+            wait: 2000,
+            message: `Text did not match after typing ${JSON.stringify(character)}`,
+        });
+    }
+}
+
 /**
  * Get the time difference in seconds
  */

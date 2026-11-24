@@ -7,12 +7,13 @@ Given('I am on the Forms screen', async () => {
     await FormsScreen.waitForIsShown(true);
 });
 
-When(/^(?:I have entered|I enter) "([^"]*)" in the text input$/, async (text: string) => {
-    await FormsScreen.input.setValue(text);
+// The iOS helper sends and verifies each character separately.
+When(/^(?:I have entered|I enter) "([^"]*)" in the text input$/, { timeout: 90000 }, async (text: string) => {
+    await FormsScreen.typeInput(text);
 });
 
 Given('the text input is initially empty', async () => {
-    await FormsScreen.input.setValue('');
+    await FormsScreen.typeInput('');
 });
 
 Given('the form switch is initially off', async () => {
