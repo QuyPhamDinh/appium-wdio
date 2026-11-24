@@ -87,6 +87,9 @@ jobs:
             - name: Boot iOS simulator
               run: bash scripts/boot-ios-ci-simulator.sh
 
+            - name: Build WebDriverAgent
+              run: bash scripts/build-ios-ci-wda.sh
+
             - name: Run iOS lifecycle scenarios
               run: npm run ios.app.cucumber -- --spec tests/features/warm_resume.feature
 

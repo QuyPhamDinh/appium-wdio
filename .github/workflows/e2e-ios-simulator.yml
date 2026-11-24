@@ -38,6 +38,9 @@ jobs:
             - name: Boot iOS simulator
               run: bash scripts/boot-ios-ci-simulator.sh
 
+            - name: Build WebDriverAgent
+              run: bash scripts/build-ios-ci-wda.sh
+
             - name: Run iOS app tests
               run: npm run ios.app
 
@@ -49,4 +52,5 @@ jobs:
                   path: |
                       allure-results/
                       logs/appium.log
+                      logs/wda-build.log
                   if-no-files-found: warn

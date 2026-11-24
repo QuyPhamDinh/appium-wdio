@@ -3,6 +3,7 @@ import { config as baseConfig } from "./wdio.shared.local.appium.conf.js";
 
 const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
 const simulatorUdid = process.env.IOS_UDID;
+const wdaDerivedDataPath = process.env.IOS_WDA_DERIVED_DATA_PATH;
 
 export const config: WebdriverIO.Config = {
     ...baseConfig,
@@ -37,7 +38,12 @@ export const config: WebdriverIO.Config = {
             // NOTE: Change this version according to the Simulator Version you have created on your local machine
             "appium:platformVersion": process.env.IOS_PLATFORM_VERSION || "18.2",
             ...(simulatorUdid && { "appium:udid": simulatorUdid }),
+            ...(wdaDerivedDataPath && {
+                "appium:derivedDataPath": wdaDerivedDataPath,
+                "appium:usePrebuiltWDA": true,
+            }),
             ...(isGitHubActions && {
+                "appium:isHeadless": true,
                 "appium:wdaLaunchTimeout": 180000,
                 "appium:wdaStartupRetries": 1,
                 "appium:showXcodeLog": true,
