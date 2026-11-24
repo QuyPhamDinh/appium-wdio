@@ -2,13 +2,14 @@ import { join } from "node:path";
 import { config as baseConfig } from "./wdio.shared.local.appium.conf.js";
 
 const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
+const isAppPreinstalled = isGitHubActions && process.env.IOS_APP_PREINSTALLED === 'true';
 const simulatorUdid = process.env.IOS_UDID;
 const wdaDerivedDataPath = process.env.IOS_WDA_DERIVED_DATA_PATH;
 
 export const config: WebdriverIO.Config = {
     ...baseConfig,
     ...(isGitHubActions && {
-        connectionRetryTimeout: 300000,
+        connectionRetryTimeout: isAppPreinstalled ? 420000 : 300000,
         connectionRetryCount: 0,
     }),
 
@@ -41,6 +42,10 @@ export const config: WebdriverIO.Config = {
             ...(wdaDerivedDataPath && {
                 "appium:derivedDataPath": wdaDerivedDataPath,
                 "appium:usePrebuiltWDA": true,
+            }),
+            ...(isAppPreinstalled && {
+                'appium:noReset': true,
+                'appium:shouldTerminateApp': true,
             }),
             ...(isGitHubActions && {
                 "appium:isHeadless": true,

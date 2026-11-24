@@ -90,8 +90,36 @@ jobs:
             - name: Build WebDriverAgent
               run: bash scripts/build-ios-ci-wda.sh
 
+            - name: Warm up iOS simulator
+              timeout-minutes: 8
+              shell: bash
+              run: |
+                  mkdir -p logs
+                  {
+                      echo 'Installing the demo app'
+                      time xcrun simctl install "$IOS_UDID" apps/wdiodemoapp.app
+                      echo 'Launching the demo app'
+                      time xcrun simctl launch "$IOS_UDID" org.wdiodemoapp
+                      echo 'Terminating the demo app'
+                      time xcrun simctl terminate "$IOS_UDID" org.wdiodemoapp
+                  } 2>&1 | tee logs/ios-simulator-warm-up.log
+
             - name: Run iOS lifecycle scenarios
+              env:
+                  IOS_APP_PREINSTALLED: 'true'
               run: npm run ios.app.cucumber -- --spec tests/features/warm_resume.feature
+
+            - name: Collect iOS simulator logs
+              if: failure()
+              run: |
+                  simulator_logs="$HOME/Library/Logs/CoreSimulator"
+                  if [[ -d "$simulator_logs" ]]; then
+                      mkdir -p logs/core-simulator
+                      find "$simulator_logs" -maxdepth 1 -type f -name '*.log' -exec cp {} logs/core-simulator/ \;
+                      if [[ -n "${IOS_UDID:-}" && -d "$simulator_logs/$IOS_UDID" ]]; then
+                          cp -R "$simulator_logs/$IOS_UDID" logs/core-simulator/
+                      fi
+                  fi
 
             - name: Upload iOS failure diagnostics
               if: failure()
