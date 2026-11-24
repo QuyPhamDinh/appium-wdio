@@ -1,10 +1,15 @@
 import { join } from "node:path";
 import { config as baseConfig } from "./wdio.shared.local.appium.conf.js";
 
-const isGhActions = process.env.GITHUB_ACTION;
+const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
+const simulatorUdid = process.env.IOS_UDID;
 
 export const config: WebdriverIO.Config = {
     ...baseConfig,
+    ...(isGitHubActions && {
+        connectionRetryTimeout: 300000,
+        connectionRetryCount: 0,
+    }),
 
     // ============
     // Specs
@@ -31,6 +36,12 @@ export const config: WebdriverIO.Config = {
             //
             // NOTE: Change this version according to the Simulator Version you have created on your local machine
             "appium:platformVersion": process.env.IOS_PLATFORM_VERSION || "18.2",
+            ...(simulatorUdid && { "appium:udid": simulatorUdid }),
+            ...(isGitHubActions && {
+                "appium:wdaLaunchTimeout": 180000,
+                "appium:wdaStartupRetries": 1,
+                "appium:showXcodeLog": true,
+            }),
             "appium:orientation": "PORTRAIT",
             "appium:automationName": "XCUITest",
             // The path to the app

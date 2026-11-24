@@ -35,6 +35,9 @@ jobs:
                   ditto -x -k "$RUNNER_TEMP/wdio-ios.zip" apps
                   test -d apps/wdiodemoapp.app
 
+            - name: Boot iOS simulator
+              run: bash scripts/boot-ios-ci-simulator.sh
+
             - name: Run iOS app tests
               run: npm run ios.app
 
