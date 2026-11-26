@@ -66,6 +66,14 @@ The local Android app configs default to `Pixel 10` on Android `17.0` with UDID 
 ANDROID_DEVICE_NAME="Pixel 8" ANDROID_PLATFORM_VERSION="15.0" ANDROID_UDID="emulator-5556" npm run android.app
 ```
 
+To automatically start the Android emulator if it is not already running, wait until it finishes booting, and run the Android app tests, use [the Android runner script](./scripts/run-android-app.sh):
+
+```sh
+./scripts/run-android-app.sh
+./scripts/run-android-app.sh --spec tests/specs/app.login.spec.ts
+ANDROID_AVD_NAME="Pixel_10" ANDROID_UDID="emulator-5554" ./scripts/run-android-app.sh
+```
+
 The [Functional Android App Tests workflow](./.github/workflows/e2e-android-app.yml) runs the regular suite (`npm run android.app.ci`) and the biometric spec in separate jobs on GitHub-hosted Android 15 emulators. It runs on pull requests and pushes to `main`, and supports manual runs from the Actions tab. The `android-test-reports` and `android-biometric-test-reports` artifacts contain any JUnit and Allure results produced by their respective jobs, plus device diagnostics on failure.
 
 ### iOS Simulator
@@ -80,6 +88,14 @@ The default simulator is `iPhone 16 Pro` on iOS `18.2`. Override them when neede
 
 ```sh
 IOS_DEVICE_NAME="iPhone 16" IOS_PLATFORM_VERSION="26.0" npm run ios.app
+```
+
+To automatically boot the iOS simulator if it is not already started and run the iOS app tests, use [the iOS runner script](./scripts/run-ios-app.sh):
+
+```sh
+./scripts/run-ios-app.sh
+./scripts/run-ios-app.sh --spec tests/specs/app.login.spec.ts
+IOS_DEVICE_NAME="iPhone 16" IOS_PLATFORM_VERSION="18.2" ./scripts/run-ios-app.sh
 ```
 
 The [iOS App Tests (GitHub Simulator) workflow](./.github/workflows/e2e-ios-simulator.yml) runs the same suite on a GitHub-hosted iPhone 16 Pro simulator with iOS 18.5. It runs on pull requests, pushes to `main`, and manual dispatches from the Actions tab. The `ios-simulator-test-reports` artifact contains any Allure results and Appium logs produced by the job.
