@@ -1,9 +1,9 @@
-import TabBar from "../screenobjects/components/TabBar.js";
-import WebViewScreen from "../screenobjects/WebviewScreen.js";
-import SwipeScreen from "../screenobjects/SwipeScreen.js";
-import { CONTEXT_REF } from "../helpers/WebView.js";
+import TabBar from '../screenobjects/components/TabBar.js';
+import WebViewScreen from '../screenobjects/WebviewScreen.js';
+import SwipeScreen from '../screenobjects/SwipeScreen.js';
+import { CONTEXT_REF } from '../helpers/WebView.js';
 
-describe("WebdriverIO and Appium, when interacting with a WebView,", () => {
+describe('WebdriverIO and Appium, when interacting with a WebView,', () => {
     // For now we exclude this file for iOS. There is an issue with the current EXPO app
     // which lead to a new feature request for WebdriverIO. We first need to implement that
     // before we can run this test on iOS.
@@ -11,7 +11,7 @@ describe("WebdriverIO and Appium, when interacting with a WebView,", () => {
     // So please take a look at this code to see how you could use WebViews and context switching
     // for your app.
     if (driver.isAndroid) {
-        it("should be able to switch between webview, native and webview", async function () {
+        it('should be able to switch between webview, native and webview', async function () {
             this.timeout(360000);
             try {
                 await verifyWebViewRoundTrip();
@@ -34,11 +34,11 @@ async function verifyWebViewRoundTrip() {
     await WebViewScreen.switchToWebsite();
 
     // Open the search options
-    await $(".DocSearch").click();
+    await $('.DocSearch').click();
     // Wait for the search box to be there
     // We don't put an expect here because the wait for will fail if the element is not there.
     // This means this is already an "indirect" expectation
-    await $(".DocSearch-Input").waitForDisplayed();
+    await $('.DocSearch-Input').waitForDisplayed();
     await driver.pause(5000);
     // Hide the keyboard if shown
     if (await driver.isKeyboardShown()) {
@@ -53,7 +53,7 @@ async function verifyWebViewRoundTrip() {
          *
          * That's why we click on the footer
          */
-        await $(".DocSearch-Footer").click();
+        await $('.DocSearch-Footer').click();
     }
 
     // Now open the swipe screen and do some action there

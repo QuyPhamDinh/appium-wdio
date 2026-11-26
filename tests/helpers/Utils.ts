@@ -1,4 +1,4 @@
-import { BUNDLE_ID, PACKAGE_NAME } from "./Constants.js";
+import { BUNDLE_ID, PACKAGE_NAME } from './Constants.js';
 
 export async function typeText(element: ChainablePromiseElement, text: string): Promise<void> {
     if (!driver.isIOS) {
@@ -107,7 +107,7 @@ export async function openDeepLinkUrl(url:string) {
         // Assumption is made that the alert will be seen within 2 seconds, if not it did not appear
         await openButton.waitForDisplayed({ timeout: 2000 });
         await openButton.click();
-    } catch (e) {
+    } catch {
         // ignore
     }
 }

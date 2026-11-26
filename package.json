@@ -48,6 +48,7 @@
         "ios.lt.browser.simulator": "wdio run config/lambdatest/wdio.ios.simulator.browser.conf.ts",
         "ios.lt.browser.realdevice": "wdio run config/lambdatest/wdio.ios.realdevice.browser.conf.ts",
         "lint": "eslint config tests",
+        "typecheck": "tsc --noEmit",
         "appium:inspector": "npx start-appium-inspector",
         "allure:generate": "allure generate allure-results --clean -o allure-report",
         "allure:open": "allure open allure-report"

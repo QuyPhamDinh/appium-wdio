@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir } from 'node:fs/promises';
-import { join } from "node:path";
+import { join } from 'node:path';
 import type { Services } from '@wdio/types';
-import { config as baseConfig } from "./wdio.shared.local.appium.conf.js";
+import { config as baseConfig } from './wdio.shared.local.appium.conf.js';
 
-const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
+const isGitHubActions = process.env.GITHUB_ACTIONS === 'true';
 const isAppPreinstalled = isGitHubActions && process.env.IOS_APP_PREINSTALLED === 'true';
 const simulatorUdid = process.env.IOS_UDID;
 const wdaDerivedDataPath = process.env.IOS_WDA_DERIVED_DATA_PATH;
@@ -38,7 +38,7 @@ export const config: WebdriverIO.Config = {
     // ============
     // Specs
     // ============
-    specs: ["../tests/specs/**/app*.spec.ts"],
+    specs: ['../tests/specs/**/app*.spec.ts'],
 
     // ============
     // Capabilities
@@ -48,52 +48,52 @@ export const config: WebdriverIO.Config = {
     capabilities: [
         {
             // The defaults you need to have in your config
-            platformName: "iOS",
-            "wdio:maxInstances": 1,
+            platformName: 'iOS',
+            'wdio:maxInstances': 1,
             // For W3C the appium capabilities need to have an extension prefix
             // This is `appium:` for all Appium Capabilities which can be found here
             // http://appium.io/docs/en/writing-running-appium/caps/
 
             //
             // NOTE: Change this name according to the Simulator you have created on your local machine
-            "appium:deviceName": process.env.IOS_DEVICE_NAME || "iPhone 16 Pro",
+            'appium:deviceName': process.env.IOS_DEVICE_NAME || 'iPhone 16 Pro',
             //
             // NOTE: Change this version according to the Simulator Version you have created on your local machine
-            "appium:platformVersion": process.env.IOS_PLATFORM_VERSION || "18.2",
-            ...(simulatorUdid && { "appium:udid": simulatorUdid }),
+            'appium:platformVersion': process.env.IOS_PLATFORM_VERSION || '18.2',
+            ...(simulatorUdid && { 'appium:udid': simulatorUdid }),
             ...(wdaDerivedDataPath && {
-                "appium:derivedDataPath": wdaDerivedDataPath,
-                "appium:usePrebuiltWDA": true,
+                'appium:derivedDataPath': wdaDerivedDataPath,
+                'appium:usePrebuiltWDA': true,
             }),
             ...(isAppPreinstalled && {
                 'appium:noReset': true,
                 'appium:shouldTerminateApp': true,
             }),
             ...(isGitHubActions && {
-                "appium:isHeadless": true,
-                "appium:wdaLaunchTimeout": 180000,
-                "appium:wdaStartupRetries": 1,
-                "appium:showXcodeLog": true,
+                'appium:isHeadless': true,
+                'appium:wdaLaunchTimeout': 180000,
+                'appium:wdaStartupRetries': 1,
+                'appium:showXcodeLog': true,
             }),
-            "appium:orientation": "PORTRAIT",
-            "appium:automationName": "XCUITest",
+            'appium:orientation': 'PORTRAIT',
+            'appium:automationName': 'XCUITest',
             // The path to the app
-            "appium:app": join(
+            'appium:app': join(
                 process.cwd(),
-                "apps",
+                'apps',
                 // Change this name according to the app version you downloaded
-                "wdiodemoapp.app"
+                'wdiodemoapp.app'
             ),
-            "appium:bundleId": "org.wdiodemoapp",
-            "appium:newCommandTimeout": 240,
+            'appium:bundleId': 'org.wdiodemoapp',
+            'appium:newCommandTimeout': 240,
             // Webview detection capabilities for iOS 18.x
             // This is needed to wait for the webview context to become available
-            "appium:webviewConnectTimeout": 20 * 1000,
+            'appium:webviewConnectTimeout': 20 * 1000,
             // Add process bundle IDs to match webviews (iOS uses process-{bundleId} format)
             // Using wildcard to match all webview processes, or specify: ["process-wdiodemoapp", "process-org.wdiodemoapp"]
-            "appium:additionalWebviewBundleIds": ["*"],
+            'appium:additionalWebviewBundleIds': ['*'],
             // There are some issues when typing that not all keys are sent. This is a workaround to slow down the typing.
-            "appium:maxTypingFrequency": 30,
+            'appium:maxTypingFrequency': 30,
         },
     ],
 };

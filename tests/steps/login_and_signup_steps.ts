@@ -1,9 +1,9 @@
-import {Given, When, Then} from '@wdio/cucumber-framework'
+import { Given, When, Then } from '@wdio/cucumber-framework';
 import TabBar from '../screenobjects/components/TabBar.js';
 import LoginScreen from '../screenobjects/LoginScreen.js';
 import NativeAlert from '../screenobjects/components/NativeAlert.js';
 
-Given(/^I am on the (login|signup) tab$/, async (tab) => {
+Given(/^I am on the (?:login|signup) tab$/, async () => {
     await TabBar.waitForTabBarShown();
     await TabBar.openLogin();
     await LoginScreen.waitForIsShown(true);
@@ -12,10 +12,10 @@ Given(/^I am on the (login|signup) tab$/, async (tab) => {
 When(/^I enter valid (login|signup) credentials$/, async (formType) => {
     if (formType === 'login') {
         await LoginScreen.tapOnLoginContainerButton();
-        await LoginScreen.submitLoginForm({username: 'test@webdriver.io', password: 'Test1234!'});
+        await LoginScreen.submitLoginForm({ username: 'test@webdriver.io', password: 'Test1234!' });
     } else if (formType === 'signup') {
         await LoginScreen.tapOnSignUpContainerButton();
-        await LoginScreen.submitSignUpForm({username: 'test@webdriver.io', password: 'Test1234!'});
+        await LoginScreen.submitSignUpForm({ username: 'test@webdriver.io', password: 'Test1234!' });
     }
 });
 

@@ -31,11 +31,11 @@ export const config: WebdriverIO.Config = {
     capabilities: [
         {
             // Set URL of the application under test
-            app: 'https://testingbot.com/appium/sample.apk',
+            'appium:app': 'https://testingbot.com/appium/sample.apk',
 
-            deviceName: 'Pixel 6',
+            'appium:deviceName': 'Pixel 6',
             platformName: 'Android',
-            version: '12.0',
+            'appium:platformVersion': '12.0',
         },
     ],
 };
