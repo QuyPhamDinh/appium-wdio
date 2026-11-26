@@ -1,4 +1,9 @@
-import { BUNDLE_ID, PACKAGE_NAME } from './Constants.js';
+import { APP_CONFIG } from './AppConfig.js';
+
+export type DeepLinkOptions = {
+    scheme?: string;
+    appId?: string;
+};
 
 export async function typeText(element: ChainablePromiseElement, text: string): Promise<void> {
     if (!driver.isIOS) {
@@ -48,14 +53,15 @@ export function isIosRealDevice(){
 /**
  * Create a cross platform solution for opening a deep link
  */
-export async function openDeepLinkUrl(url:string) {
-    const prefix = 'wdio://';
+export async function openDeepLinkUrl(url:string, options: DeepLinkOptions = {}) {
+    const prefix = options.scheme ?? APP_CONFIG.deepLinkScheme;
+    const deepLinkUrl = `${ prefix }${ url }`;
 
     if (driver.isAndroid) {
         // Life is so much easier
         return driver.execute('mobile:deepLink', {
-            url: `${ prefix }${ url }`,
-            package: 'com.wdiodemoapp',
+            url: deepLinkUrl,
+            package: options.appId ?? APP_CONFIG.androidPackage,
         });
     }
 
@@ -85,12 +91,12 @@ export async function openDeepLinkUrl(url:string) {
         }
 
         // Submit the url and add a break
-        await urlField.setValue(`${ prefix }${ url }\uE007`);
+        await urlField.setValue(`${ deepLinkUrl }\uE007`);
     } else {
         // Else we ne are a simulator
         return await driver.execute('mobile:deepLink', {
-            url: `${ prefix }${ url }`,
-            bundleId: BUNDLE_ID,
+            url: deepLinkUrl,
+            bundleId: options.appId ?? APP_CONFIG.iosBundleId,
         });
     }
 
@@ -141,7 +147,12 @@ export async function sendAppToBackground() {
  * Get the demo app identifier for the current platform.
  */
 export function getAppId(): string {
-    return driver.isAndroid ? PACKAGE_NAME : BUNDLE_ID;
+    const caps = driver.capabilities as Record<string, unknown>;
+    if (driver.isAndroid) {
+        return (caps['appium:appPackage'] as string | undefined) || APP_CONFIG.androidPackage;
+    }
+
+    return (caps['appium:bundleId'] as string | undefined) || APP_CONFIG.iosBundleId;
 }
 
 /**

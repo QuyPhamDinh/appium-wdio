@@ -1,8 +1,10 @@
+import { APP_CONFIG } from '../../helpers/AppConfig.js';
+
 const ALERT_TIMEOUT = process.env.GITHUB_ACTIONS === 'true' ? 20000 : 11000;
 
 const SELECTORS = {
     ANDROID: {
-        ALERT_TITLE: '*//android.widget.TextView[@resource-id="com.wdiodemoapp:id/alert_title"]',
+        ALERT_TITLE: `*//android.widget.TextView[@resource-id="${APP_CONFIG.androidPackage}:id/alert_title" or @resource-id="android:id/alertTitle"]`,
         ALERT_MESSAGE: '*//android.widget.TextView[@resource-id="android:id/message"]',
         ALERT_BUTTON: '*//android.widget.Button[@text="{BUTTON_TEXT}"]',
     },

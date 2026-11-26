@@ -1,4 +1,4 @@
-import { BUNDLE_ID, PACKAGE_NAME } from './Constants.js';
+import { APP_CONFIG } from './AppConfig.js';
 
 export const CONTEXT_REF = {
     NATIVE_APP: 'NATIVE_APP',
@@ -9,6 +9,21 @@ const DOCUMENT_READY_STATE = {
     INTERACTIVE: 'interactive',
     LOADING: 'loading',
 };
+
+export type WebViewTarget = {
+    urlMatch?: string | RegExp;
+    titleMatch?: string | RegExp;
+    androidPackage?: string;
+    iosBundleIds?: string[];
+};
+
+function matches(value: string | undefined, matcher: string | RegExp): boolean {
+    if (!value) {
+        return false;
+    }
+
+    return typeof matcher === 'string' ? value.includes(matcher) : matcher.test(value);
+}
 
 type ContextInterface = {
     id: string;
@@ -57,7 +72,19 @@ type AndroidContext =  {
  * Please read the comments in the code for more information.
  */
 class WebView {
-    async switchToWebsite() {
+    private readonly defaultTarget: Required<WebViewTarget>;
+
+    constructor(target: WebViewTarget = {}) {
+        this.defaultTarget = {
+            urlMatch: target.urlMatch ?? APP_CONFIG.webviewUrl,
+            titleMatch: target.titleMatch ?? APP_CONFIG.webviewTitlePattern,
+            androidPackage: target.androidPackage ?? APP_CONFIG.androidPackage,
+            iosBundleIds: target.iosBundleIds ?? APP_CONFIG.iosWebviewBundleIds,
+        };
+    }
+
+    async switchToWebsite(targetOverrides: WebViewTarget = {}) {
+        const target = { ...this.defaultTarget, ...targetOverrides };
         let selectedContext: { id: string; pageId?: string } | undefined;
 
         await driver.waitUntil(async () => {
@@ -70,18 +97,22 @@ class WebView {
                 const context = entry as ContextInterface;
                 if (driver.isIOS) {
                     const { bundleId } = entry as IosContext;
-                    if ((bundleId === BUNDLE_ID || bundleId === 'process-wdiodemoapp') &&
-                        context.url?.startsWith('https://webdriver.io/')) {
+                    if (
+                        target.iosBundleIds.includes(bundleId) &&
+                        matches(context.url, target.urlMatch)
+                    ) {
                         selectedContext = { id: context.id };
                         return true;
                     }
                 } else {
                     const androidContext = entry as AndroidContext;
-                    if (androidContext.packageName === PACKAGE_NAME &&
+                    if (
+                        androidContext.packageName === target.androidPackage &&
                         androidContext.androidWebviewData?.empty === false &&
                         androidContext.webviewPageId &&
-                        /WebdriverIO.*/.test(context.title ?? '') &&
-                        context.url?.includes('https://webdriver.io/')) {
+                        matches(context.title, target.titleMatch) &&
+                        matches(context.url, target.urlMatch)
+                    ) {
                         selectedContext = { id: context.id, pageId: androidContext.webviewPageId };
                         return true;
                     }
@@ -91,7 +122,7 @@ class WebView {
         }, {
             timeout: 45000,
             interval: 500,
-            timeoutMsg: 'The WebdriverIO website context did not become available',
+            timeoutMsg: `The WebView context matching ${String(target.urlMatch)} did not become available`,
         });
 
         if (!selectedContext) {
@@ -125,8 +156,8 @@ class WebView {
     /**
      * Wait for the website in the webview to be loaded
      */
-    async waitForWebsiteLoaded () {
-        await this.switchToWebsite();
+    async waitForWebsiteLoaded (targetOverrides: WebViewTarget = {}) {
+        await this.switchToWebsite(targetOverrides);
         await this.waitForDocumentFullyLoaded();
         await driver.switchContext(CONTEXT_REF.NATIVE_APP);
     }
