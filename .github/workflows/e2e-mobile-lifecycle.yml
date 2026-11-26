@@ -87,8 +87,30 @@ jobs:
             - name: Boot iOS simulator
               run: bash scripts/boot-ios-ci-simulator.sh
 
+            - name: Get Xcode build version
+              id: xcode
+              run: |
+                  xcode_version=$(xcodebuild -version)
+                  xcode_build=$(awk '/^Build version / { print $3 }' <<< "$xcode_version")
+                  test -n "$xcode_build"
+                  printf 'build=%s\n' "$xcode_build" >> "$GITHUB_OUTPUT"
+
+            - name: Restore WebDriverAgent cache
+              id: wda-cache
+              uses: actions/cache/restore@v6
+              with:
+                  path: ${{ runner.temp }}/wda-derived-data
+                  key: wda-${{ runner.os }}-${{ runner.arch }}-xcode${{ steps.xcode.outputs.build }}-ios${{ env.IOS_PLATFORM_VERSION }}-${{ hashFiles('package-lock.json', 'scripts/build-ios-ci-wda.sh') }}
+
             - name: Build WebDriverAgent
               run: bash scripts/build-ios-ci-wda.sh
+
+            - name: Save WebDriverAgent cache
+              if: success() && steps.wda-cache.outputs.cache-hit != 'true'
+              uses: actions/cache/save@v6
+              with:
+                  path: ${{ runner.temp }}/wda-derived-data
+                  key: ${{ steps.wda-cache.outputs.cache-primary-key }}
 
             - name: Warm up iOS simulator
               timeout-minutes: 8
