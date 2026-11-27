@@ -43,20 +43,13 @@ export const config: WebdriverIO.Config = {
     // Define all options that are relevant for the WebdriverIO instance here
     //
     // Level of logging verbosity: trace | debug | info | warn | error | silent
-    logLevel: 'debug',
-    // Set specific log levels per logger
-    // loggers:
-    // - webdriver, webdriverio
-    // - @wdio/applitools-service, @wdio/browserstack-service, @wdio/devtools-service, @wdio/sauce-service
-    // - @wdio/mocha-framework, @wdio/jasmine-framework
-    // - @wdio/local-runner
-    // - @wdio/sumologic-reporter
-    // - @wdio/cli, @wdio/config, @wdio/utils
-    // Level of logging verbosity: trace | debug | info | warn | error | silent
-    // logLevels: {
-    //     webdriver: 'info',
-    //     '@wdio/applitools-service': 'info'
-    // },
+    logLevel: (process.env.WDIO_LOG_LEVEL || (process.env.GITHUB_ACTIONS === 'true' ? 'warn' : 'info')) as NonNullable<WebdriverIO.Config['logLevel']>,
+    // Keep noisy internal services quiet on stdout; full Appium logs go to ./logs/appium.log
+    logLevels: {
+        webdriver: (process.env.WDIO_LOG_LEVEL || 'warn') as NonNullable<WebdriverIO.Config['logLevel']>,
+        '@wdio/appium-service': 'error',
+        '@wdio/utils': 'error',
+    },
     //
     // If you only want to run your tests until a specific amount of tests have failed use
     // bail (default is 0 - don't bail, run all tests).

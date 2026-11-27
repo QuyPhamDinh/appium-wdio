@@ -32,7 +32,7 @@ jobs:
 
             - name: 📬 Upload App to Sauce Labs
               run: |
-                  curl -v \
+                  curl --fail --silent --show-error \
                       -F "payload=@./apps/ios.simulator.wdio.native.app.v2.2.0.zip" \
                       -F name=wdio-demo-app-ios.zip \
                       -u "${{ secrets.SAUCE_USERNAME }}:${{ secrets.SAUCE_ACCESS_KEY }}" \

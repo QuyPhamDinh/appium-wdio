@@ -78,7 +78,7 @@ export const config: WebdriverIO.Config = {
                 'appium:isHeadless': true,
                 'appium:wdaLaunchTimeout': 180000,
                 'appium:wdaStartupRetries': 1,
-                'appium:showXcodeLog': true,
+                'appium:showXcodeLog': !wdaDerivedDataPath,
             }),
             'appium:orientation': 'PORTRAIT',
             'appium:automationName': 'XCUITest',
