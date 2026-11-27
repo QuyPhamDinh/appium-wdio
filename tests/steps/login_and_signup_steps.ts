@@ -25,6 +25,6 @@ Then(/^I should see a (Success|Signed Up) alert$/, async (alertType) => {
 });
 
 Then('the alert should be closed when I click on OK', async () => {
-    await NativeAlert.topOnButtonWithText('OK');
+    await NativeAlert.tapOnButtonWithText('OK');
     await NativeAlert.waitForIsShown(false);
 });

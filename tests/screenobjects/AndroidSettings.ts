@@ -43,7 +43,14 @@ class AndroidSettings {
     private async postAndroidTenFingerPrintSetup(pin: number){
         await this.reEnterPin(pin);
         if (this.platformVersion >= 14) {
-            await this.waitAndTap('Pixel Imprint');
+            const pixelImprint = await this.findAndroidElementByMatchingText('Pixel Imprint');
+            const moreButton = await this.findAndroidElementByMatchingText('MORE');
+            await driver.waitUntil(async () =>
+                await pixelImprint.isDisplayed() || await moreButton.isDisplayed(),
+            { timeout: 10000, timeoutMsg: 'Android Fingerprint setup screen did not appear' });
+            if (await pixelImprint.isDisplayed()) {
+                await pixelImprint.click();
+            }
         }
         if (this.platformVersion >= 12) {
             await this.waitAndTap('MORE');
@@ -57,7 +64,7 @@ class AndroidSettings {
      * Re-enter pin and submit screen
      */
     private async reEnterPin(pin: number) {
-        await (await this.findAndroidElementByMatchingText('Re-enter your PIN')).waitForDisplayed({ timeout: 10*1000 });
+        await (await this.findAndroidElementByMatchingText('(Re-enter your PIN|Enter your device PIN)')).waitForDisplayed({ timeout: 10*1000 });
         await this.executeAdbCommand(`input text ${pin} && input keyevent 66`);
     }
 
@@ -128,7 +135,13 @@ class AndroidSettings {
      */
     async enableBiometricLogin() {
         // Set the PIN before opening Settings so the security screen starts with the new state.
-        await driver.execute('mobile: shell', { command: 'locksettings', args: ['set-pin', String(DEFAULT_PIN)] });
+        try {
+            await driver.execute('mobile: shell', { command: 'locksettings', args: ['set-pin', String(DEFAULT_PIN)] });
+        } catch {
+            // Recover if DEFAULT_PIN was left set by an earlier aborted run or snapshot
+            await driver.execute('mobile: shell', { command: 'locksettings', args: ['clear', '--old', String(DEFAULT_PIN)] });
+            await driver.execute('mobile: shell', { command: 'locksettings', args: ['set-pin', String(DEFAULT_PIN)] });
+        }
         this.testPinSet = true;
         await driver.execute('mobile: shell', { command: 'am', args: ['start', '-W', '-a', 'android.settings.SECURITY_SETTINGS'] });
         // As of Android 14 there is a new flow to enable finger print
@@ -139,7 +152,7 @@ class AndroidSettings {
             // Android 14 might have notifications that might block searching the right element, so we need to close them
             await this.closeSettingsScreenLockNotifications();
             await this.openDeviceUnlock();
-            await this.waitAndTap('.*Fingerprint.*Unlock');
+            await this.waitAndTap('^(Face & )?Fingerprint( Unlock)?$');
         } else {
             await this.waitAndTap('.*Fingerprint.*');
         }
@@ -147,7 +160,7 @@ class AndroidSettings {
     }
 
     private async openDeviceUnlock() {
-        const fingerprintOption = await this.findAndroidElementByMatchingText('.*Fingerprint.*Unlock');
+        const fingerprintOption = await this.findAndroidElementByMatchingText('^(Face & )?Fingerprint( Unlock)?$');
         await driver.waitUntil(async () => {
             if (await fingerprintOption.isDisplayed()) {
                 return true;

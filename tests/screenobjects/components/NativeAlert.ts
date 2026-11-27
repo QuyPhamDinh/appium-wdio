@@ -49,7 +49,7 @@ class NativeAlert {
     /**
      * Press a native alert button by its label.
      */
-    static async topOnButtonWithText (selector: string) {
+    static async tapOnButtonWithText (selector: string) {
         if (driver.isIOS) {
             // Retry a missed tap and confirm the alert has closed.
             await driver.waitUntil(async () => {

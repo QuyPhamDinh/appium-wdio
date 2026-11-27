@@ -1,7 +1,5 @@
 import type { RectReturn } from '@wdio/protocols';
 
-let CAROUSEL_RECTANGLES: RectReturn;
-
 class Carousel {
     get carousel() {
         return $(this.locatorStrategy('Carousel'));
@@ -65,20 +63,6 @@ class Carousel {
         });
     }
 
-    /**
-     * Get the carousel position and size
-     */
-    async getCarouselRectangles(): Promise<RectReturn> {
-        // Get the rectangles of the carousel and store it in a global that will be used for a next call.
-        // We don't want ask for the rectangles of the carousel if we already know them.
-        // This will save unneeded webdriver calls.
-        CAROUSEL_RECTANGLES =
-            CAROUSEL_RECTANGLES ||
-            (await driver.getElementRect(await this.carousel.elementId));
-
-        return CAROUSEL_RECTANGLES;
-    }
-
     async swipeToCard(direction: 'left' | 'right', activeCard: ChainablePromiseElement, targetCard: ChainablePromiseElement) {
         const activeBounds = driver.isAndroid ? await driver.getElementRect(await activeCard.elementId) : undefined;
         await this.swipe(direction, activeBounds);
@@ -121,8 +105,8 @@ class Carousel {
                 width: width - 2 * inset,
                 height,
                 direction,
-                percent: 1,
-                speed: Math.round(width * 2),
+                percent: 0.75,
+                speed: Math.round(width * 1.25),
             });
             return;
         }

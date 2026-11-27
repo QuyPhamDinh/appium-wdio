@@ -69,7 +69,7 @@ describe('WebdriverIO and Appium, when interacting with a biometric button,', ()
         }
 
         // Close the alert
-        await NativeAlert.topOnButtonWithText('OK');
+        await NativeAlert.tapOnButtonWithText('OK');
         await NativeAlert.waitForIsShown(false);
     });
 
@@ -94,7 +94,7 @@ describe('WebdriverIO and Appium, when interacting with a biometric button,', ()
                 await NativeAlert.waitForTextToContain('Not Recogni');
 
                 // Close the alert
-                await NativeAlert.topOnButtonWithText('Cancel');
+                await NativeAlert.tapOnButtonWithText('Cancel');
                 await NativeAlert.waitForIsShown(false);
             });
         } else {

@@ -26,7 +26,7 @@ describe('WebdriverIO and Appium, when interacting with a login form,', () => {
         await NativeAlert.waitForTextToContain('Success');
 
         // Close the alert
-        await NativeAlert.topOnButtonWithText('OK');
+        await NativeAlert.tapOnButtonWithText('OK');
         await NativeAlert.waitForIsShown(false);
     });
 
@@ -40,7 +40,7 @@ describe('WebdriverIO and Appium, when interacting with a login form,', () => {
         await NativeAlert.waitForTextToContain('Signed Up');
 
         // Close the alert
-        await NativeAlert.topOnButtonWithText('OK');
+        await NativeAlert.tapOnButtonWithText('OK');
         await NativeAlert.waitForIsShown(false);
     });
 });

@@ -5,6 +5,26 @@ export type DeepLinkOptions = {
     appId?: string;
 };
 
+/**
+ * Dismiss the mobile keyboard if visible by tapping outside it.
+ * Avoids `driver.hideKeyboard()`, which can fail on iOS with XCTest Code=1.
+ */
+export async function dismissKeyboardIfShown(
+    fallbackTarget: ChainablePromiseElement,
+    options: { waitForClickable?: boolean } = {},
+): Promise<void> {
+    if (!driver.isMobile || !(await driver.isKeyboardShown())) {
+        return;
+    }
+
+    if (options.waitForClickable) {
+        await fallbackTarget.waitForClickable();
+    } else {
+        await fallbackTarget.waitForDisplayed();
+    }
+    await fallbackTarget.click();
+}
+
 export async function typeText(element: ChainablePromiseElement, text: string): Promise<void> {
     if (!driver.isIOS) {
         await element.setValue(text);

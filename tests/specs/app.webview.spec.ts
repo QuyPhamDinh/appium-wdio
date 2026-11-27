@@ -2,6 +2,7 @@ import TabBar from '../screenobjects/components/TabBar.js';
 import WebViewScreen from '../screenobjects/WebviewScreen.js';
 import SwipeScreen from '../screenobjects/SwipeScreen.js';
 import { CONTEXT_REF } from '../helpers/WebView.js';
+import { dismissKeyboardIfShown } from '../helpers/Utils.js';
 
 describe('WebdriverIO and Appium, when interacting with a WebView,', () => {
     // For now we exclude this file for iOS. There is an issue with the current EXPO app
@@ -40,22 +41,7 @@ async function verifyWebViewRoundTrip() {
     await initialSearchInput.waitForDisplayed();
     await initialSearchInput.waitForClickable();
     // Hide the keyboard if shown
-    if (await driver.isKeyboardShown()) {
-        /**
-         * Normally we would hide the keyboard with this command `driver.hideKeyboard()`, but there is an issue for hiding the keyboard
-         * on iOS when using the command. You will get an error like below
-         *
-         *  Request failed with status 400 due to Error Domain=com.facebook.WebDriverAgent Code=1 "The keyboard on iPhone cannot be
-         *  dismissed because of a known XCTest issue. Try to dismiss it in the way supported by your application under test."
-         *  UserInfo={NSLocalizedDescription=The keyboard on iPhone cannot be dismissed because of a known XCTest issue. Try to dismiss
-         *  it in the way supported by your application under test.}
-         *
-         * That's why we click on the footer
-         */
-        const footer = $('.DocSearch-Footer');
-        await footer.waitForClickable();
-        await footer.click();
-    }
+    await dismissKeyboardIfShown($('.DocSearch-Footer'), { waitForClickable: true });
 
     // Now open the swipe screen and do some action there
     // This can only be done if webdriver.io is told to go to the native context
