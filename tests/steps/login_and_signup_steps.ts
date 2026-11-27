@@ -21,7 +21,7 @@ When(/^I enter valid (login|signup) credentials$/, async (formType) => {
 
 Then(/^I should see a (Success|Signed Up) alert$/, async (alertType) => {
     await NativeAlert.waitForIsShown();
-    await expect(await NativeAlert.text()).toContain(alertType);
+    await NativeAlert.waitForTextToContain(alertType);
 });
 
 Then('the alert should be closed when I click on OK', async () => {

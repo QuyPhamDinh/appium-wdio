@@ -3,7 +3,7 @@ import LoginScreen from '../screenobjects/LoginScreen.js';
 import Biometrics from '../helpers/Biometrics.js';
 import NativeAlert from '../screenobjects/components/NativeAlert.js';
 import AndroidSettings from '../screenobjects/AndroidSettings.js';
-import { executeInHomeScreenContext, relaunchApp } from '../helpers/Utils.js';
+import { executeInHomeScreenContext, getAppId, relaunchApp } from '../helpers/Utils.js';
 import { BUNDLE_ID, PACKAGE_NAME } from '../helpers/Constants.js';
 
 /**
@@ -14,7 +14,13 @@ import { BUNDLE_ID, PACKAGE_NAME } from '../helpers/Constants.js';
  * you for Android 9.0 (2018) till the latest version of Android.
  */
 describe('WebdriverIO and Appium, when interacting with a biometric button,', () => {
+    let isFirstTest = true;
+
     beforeEach(async () => {
+        if (!isFirstTest) {
+            await relaunchApp(getAppId());
+        }
+        isFirstTest = false;
         await goToLoginPage();
 
         // If the biometry is not shown on iOS, enable it on the phone
@@ -52,12 +58,14 @@ describe('WebdriverIO and Appium, when interacting with a biometric button,', ()
         await Biometrics.submitBiometricLogin(true);
         // Wait for the alert and validate it
         await NativeAlert.waitForIsShown();
-        await expect(await NativeAlert.text()).toContain('Success');
+        await NativeAlert.waitForTextToContain('Success');
 
-        if (driver.isIOS){
-            // Before we can close the alert we need to wait for the native "Face ID" modal to disappear
-            // This modal can not be detected by Appium, so we need to wait for it to disappear
-            await driver.pause(750);
+        if (driver.isIOS) {
+            // Wait for the SpringBoard Face ID / Touch ID overlay to disappear before dismissing the app alert
+            await executeInHomeScreenContext(async () => {
+                const prompt = $('-ios predicate string:type == "XCUIElementTypeStaticText" AND (name == "Face ID" OR name BEGINSWITH "Touch ID")');
+                await prompt.waitForDisplayed({ reverse: true, timeout: 5000 });
+            });
         }
 
         // Close the alert
@@ -83,7 +91,7 @@ describe('WebdriverIO and Appium, when interacting with a biometric button,', ()
                 // Wait for the alert and validate it
                 await NativeAlert.waitForIsShown();
                 // There's the English and US version of the "Not Recognized|Not Recognised"" text, so we just check for "Not Recogni
-                await expect(await NativeAlert.text()).toContain('Not Recogni');
+                await NativeAlert.waitForTextToContain('Not Recogni');
 
                 // Close the alert
                 await NativeAlert.topOnButtonWithText('Cancel');

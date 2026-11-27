@@ -10,36 +10,35 @@ describe('WebdriverIO and Appium, when interacting with a WebView,', () => {
     // BUT!!!: This is only for this new WebdriverIO app, not for the old one or your app.
     // So please take a look at this code to see how you could use WebViews and context switching
     // for your app.
-    if (driver.isAndroid) {
-        it('should be able to switch between webview, native and webview', async function () {
-            this.timeout(360000);
-            try {
-                await verifyWebViewRoundTrip();
-            } catch (error) {
-                if (!(error instanceof Error) || !/adbExec.*timed out/i.test(error.message)) {
-                    throw error;
-                }
-
-                console.warn(`Retrying WebView round trip in a fresh session after an ADB timeout: ${error.message}`);
-                await driver.reloadSession();
-                await verifyWebViewRoundTrip();
+    const runWebViewTest = driver.isAndroid ? it : it.skip;
+    runWebViewTest('should be able to switch between webview, native and webview', async function () {
+        this.timeout(360000);
+        try {
+            await verifyWebViewRoundTrip();
+        } catch (error) {
+            if (!(error instanceof Error) || !/adbExec.*timed out/i.test(error.message)) {
+                throw error;
             }
-        });
-    }
+
+            console.warn(`Retrying WebView round trip in a fresh session after an ADB timeout: ${error.message}`);
+            await driver.reloadSession();
+            await verifyWebViewRoundTrip();
+        }
+    });
 });
 
 async function verifyWebViewRoundTrip() {
+    await driver.switchContext(CONTEXT_REF.NATIVE_APP);
     await TabBar.waitForTabBarShown();
     await TabBar.openWebView();
     await WebViewScreen.switchToWebsite();
 
     // Open the search options
     await $('.DocSearch').click();
-    // Wait for the search box to be there
-    // We don't put an expect here because the wait for will fail if the element is not there.
-    // This means this is already an "indirect" expectation
-    await $('.DocSearch-Input').waitForDisplayed();
-    await driver.pause(5000);
+    // Wait for the search box to be usable
+    const initialSearchInput = $('.DocSearch-Input');
+    await initialSearchInput.waitForDisplayed();
+    await initialSearchInput.waitForClickable();
     // Hide the keyboard if shown
     if (await driver.isKeyboardShown()) {
         /**
@@ -53,7 +52,9 @@ async function verifyWebViewRoundTrip() {
          *
          * That's why we click on the footer
          */
-        await $('.DocSearch-Footer').click();
+        const footer = $('.DocSearch-Footer');
+        await footer.waitForClickable();
+        await footer.click();
     }
 
     // Now open the swipe screen and do some action there

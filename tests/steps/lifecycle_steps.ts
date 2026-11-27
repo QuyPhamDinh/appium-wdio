@@ -1,6 +1,6 @@
 import { Given, When } from '@wdio/cucumber-framework';
 import TabBar from '../screenobjects/components/TabBar.js';
-import { activateDemoApp, getAppId, sendAppToBackground } from '../helpers/Utils.js';
+import { activateDemoApp, getAppId, relaunchApp, sendAppToBackground } from '../helpers/Utils.js';
 
 const ANDROID_APP_STATE = {
     BACKGROUND: 3,
@@ -21,6 +21,7 @@ async function getAndroidAppPids(appId: string): Promise<string> {
 }
 
 Given('the demo app is installed and launched', async () => {
+    await relaunchApp(getAppId());
     await TabBar.waitForTabBarShown();
 });
 

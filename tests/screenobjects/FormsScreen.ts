@@ -25,11 +25,19 @@ class FormsScreen extends AppScreen {
         await typeText(input, text);
 
         if (text === '') {
-            await expect(await this.isInputEmpty()).toBe(true);
+            await this.waitUntilInputEmpty();
             return;
         }
 
         await expect(input).toHaveText(text, { trim: false });
+    }
+
+    async waitUntilInputEmpty(timeout = 5000): Promise<void> {
+        await driver.waitUntil(async () => this.isInputEmpty(), {
+            timeout,
+            interval: 200,
+            timeoutMsg: 'Expected Forms text input to be empty',
+        });
     }
 
     async isInputEmpty(): Promise<boolean> {
@@ -87,29 +95,32 @@ class FormsScreen extends AppScreen {
         return driver.isAndroid ? (await this.switch.getAttribute('checked')) === 'true' : (await this.switch.getText()) === '1';
     }
 
+    async expectSwitchActive (expected: boolean): Promise<void> {
+        if (driver.isAndroid) {
+            await expect(this.switch).toHaveAttribute('checked', String(expected));
+            return;
+        }
+
+        await expect(this.switch).toHaveText(expected ? '1' : '0');
+    }
+
+    get dropDownValue () {
+        const selector = driver.isAndroid
+            ? '//*[@content-desc="Dropdown"]//android.widget.EditText'
+            : '-ios class chain:**/*[`name == "Dropdown"`]/**/*[`name == "text_input"`]';
+
+        return $(selector);
+    }
+
+    async expectDropDownToContain (expected: string): Promise<void> {
+        await expect(this.dropDownValue).toHaveText(expect.stringContaining(expected));
+    }
+
     /**
      * Get the text of the drop down component
      */
     async getDropDownText ():Promise<string> {
-        // We need to do some magic here to get the value of the dropdown for Android and for iOS
-        // return getTextOfElement(this.dropDown);
-        // For Android the selected value can be found with this XPATH
-        // `//android.view.ViewGroup[@content-desc="Dropdown"]/android.view.ViewGroup/android.widget.EditText`
-        // Which is `//*[@content-desc="Dropdown"]//android.widget.EditText` so it's let element dependent
-        let selector;
-
-        if (driver.isAndroid) {
-            selector ='//*[@content-desc="Dropdown"]//android.widget.EditText';
-        } else {
-            // **/*[`name == "Dropdown"`]/**/*[`name == "text_input"`]
-            // For iOS we can use XPATH to the the text, this will be `//XCUIElementTypeTextField[@name="text_input"]`
-            // The downside is that it will take at least 500ms to find the element. We can also use a less brittle
-            // selector which is also faster. This is the `ios class chain` selector. To make it more robust
-            // we need to use the following selector.
-            selector = '-ios class chain:**/*[`name == "Dropdown"`]/**/*[`name == "text_input"`]';
-        }
-
-        return $(selector).getText();
+        return this.dropDownValue.getText();
     }
 }
 

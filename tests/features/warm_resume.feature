@@ -1,9 +1,11 @@
 Feature: Mobile app lifecycle
 
+  Background:
+    Given the demo app is installed and launched
+
   @android @ios @warm_resume
   Scenario: Continue using Forms after switching away
-    Given the demo app is installed and launched
-    And I am on the Forms screen
+    Given I am on the Forms screen
     And the text input is initially empty
     And the form switch is initially off
     When I enter "Draft before switching" in the text input

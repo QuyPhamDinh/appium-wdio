@@ -3,6 +3,7 @@ import TabBar from '../screenobjects/components/TabBar.js';
 import FormsScreen from '../screenobjects/FormsScreen.js';
 
 Given('I am on the Forms screen', async () => {
+    await TabBar.waitForTabBarShown();
     await TabBar.openForms();
     await FormsScreen.waitForIsShown(true);
 });
@@ -42,17 +43,17 @@ Then('the Forms screen is visible', async () => {
 });
 
 Then(/^the text input contains "([^"]*)"$/, async (text:string) => {
-    await expect(await FormsScreen.input.getText()).toBe(text);
+    await expect(FormsScreen.input).toHaveText(text, { trim: false });
 });
 
 Then('the text input is empty', async () => {
-    await expect(await FormsScreen.isInputEmpty()).toBe(true);
+    await FormsScreen.waitUntilInputEmpty();
 });
 
 Then('the form switch is on', async () => {
-    await expect(await FormsScreen.isSwitchActive()).toBe(true);
+    await FormsScreen.expectSwitchActive(true);
 });
 
 Then('the form switch is off', async () => {
-    await expect(await FormsScreen.isSwitchActive()).toBe(false);
+    await FormsScreen.expectSwitchActive(false);
 });

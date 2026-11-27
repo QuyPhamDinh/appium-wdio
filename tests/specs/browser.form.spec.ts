@@ -5,7 +5,7 @@ describe('auth form', () => {
         await FormPage.open();
         await FormPage.login({ username:'foo', password: 'bar!' });
         await FormPage.flash.waitForDisplayed({ timeout: 3000 });
-        await expect(await FormPage.flash).toHaveText(
+        await expect(FormPage.flash).toHaveText(
             expect.stringContaining('Your username is invalid!'));
     });
 
@@ -13,7 +13,7 @@ describe('auth form', () => {
         await FormPage.open();
         await FormPage.login({ username:'tomsmith', password: 'SuperSecretPassword!' });
         await FormPage.flash.waitForDisplayed({ timeout: 3000 });
-        await expect(await FormPage.flash).toHaveText(
+        await expect(FormPage.flash).toHaveText(
             expect.stringContaining('You logged into a secure area!'));
     });
 });

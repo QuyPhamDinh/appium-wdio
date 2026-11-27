@@ -19,14 +19,30 @@ class NativeAlert {
      *
      * The selector for Android differs from iOS
      */
-    static async waitForIsShown (isShown = true) {
+    static async waitForIsShown (isShown = true, timeout = ALERT_TIMEOUT) {
         const selector = driver.isAndroid
             ? SELECTORS.ANDROID.ALERT_TITLE
             : SELECTORS.IOS.ALERT;
 
         return $(selector).waitForExist({
-            timeout: ALERT_TIMEOUT,
+            timeout,
             reverse: !isShown,
+        });
+    }
+
+    static async waitForTextToContain (expectedText: string, timeout = ALERT_TIMEOUT) {
+        let lastText = '';
+        await driver.waitUntil(async () => {
+            try {
+                lastText = await this.text();
+                return lastText.includes(expectedText);
+            } catch {
+                return false;
+            }
+        }, {
+            timeout,
+            interval: 250,
+            timeoutMsg: `Expected alert text "${lastText}" to contain "${expectedText}"`,
         });
     }
 

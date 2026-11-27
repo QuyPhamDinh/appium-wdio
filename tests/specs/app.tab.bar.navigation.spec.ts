@@ -5,9 +5,11 @@ import FormsScreen from '../screenobjects/FormsScreen.js';
 import SwipeScreen from '../screenobjects/SwipeScreen.js';
 import HomeScreen from '../screenobjects/HomeScreen.js';
 import DragScreen from '../screenobjects/DragScreen.js';
+import { CONTEXT_REF } from '../helpers/WebView.js';
 
 describe('WebdriverIO and Appium, when using navigation through the tab bar', () => {
     beforeEach(async () => {
+        await driver.switchContext(CONTEXT_REF.NATIVE_APP);
         await TabBar.waitForTabBarShown();
     });
 

@@ -39,6 +39,11 @@ export const config: WebdriverIO.Config = {
     // Specs
     // ============
     specs: ['../tests/specs/**/app*.spec.ts'],
+    exclude: [
+        // Android-only WebView specs (excluded on iOS at config level)
+        '../tests/specs/**/app.webview.spec.ts',
+        '../tests/specs/**/app.webview.search.spec.ts',
+    ],
 
     // ============
     // Capabilities

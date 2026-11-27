@@ -2,9 +2,16 @@ import TabBar from '../screenobjects/components/TabBar.js';
 import FormScreen from '../screenobjects/FormsScreen.js';
 import Picker from '../screenobjects/components/Picker.js';
 import NativeAlert from '../screenobjects/components/NativeAlert.js';
+import { getAppId, relaunchApp } from '../helpers/Utils.js';
 
 describe('WebdriverIO and Appium, when interacting with form elements,', () => {
+    let isFirstTest = true;
+
     beforeEach(async () => {
+        if (!isFirstTest) {
+            await relaunchApp(getAppId());
+        }
+        isFirstTest = false;
         await TabBar.waitForTabBarShown();
         await TabBar.openForms();
         await FormScreen.waitForIsShown(true);
@@ -17,37 +24,16 @@ describe('WebdriverIO and Appium, when interacting with form elements,', () => {
         await expect(FormScreen.inputTextResult).toHaveText(
             expect.stringContaining(text)
         );
-
-        /**
-         * IMPORTANT!!
-         *  Because the app is not closed and opened between the tests
-         *  (and thus is NOT starting with the keyboard hidden)
-         *  the keyboard is closed here if it is still visible.
-         */
-        if (await driver.isKeyboardShown()) {
-            /**
-             * Normally we would hide the keyboard with this command `driver.hideKeyboard()`, but there is an issue for hiding the keyboard
-             * on iOS when using the command. You will get an error like below
-             *
-             *  Request failed with status 400 due to Error Domain=com.facebook.WebDriverAgent Code=1 "The keyboard on iPhone cannot be
-             *  dismissed because of a known XCTest issue. Try to dismiss it in the way supported by your application under test."
-             *  UserInfo={NSLocalizedDescription=The keyboard on iPhone cannot be dismissed because of a known XCTest issue. Try to dismiss
-             *  it in the way supported by your application under test.}
-             *
-             * That's why we click outside of the keyboard.
-             */
-            await FormScreen.tapOnInputTextResult();
-        }
     });
 
     it('should be able turn on and off the switch', async () => {
-        await expect(await FormScreen.isSwitchActive()).toEqual(false);
+        await FormScreen.expectSwitchActive(false);
 
         await FormScreen.tapOnSwitch();
-        await expect(await FormScreen.isSwitchActive()).toEqual(true);
+        await FormScreen.expectSwitchActive(true);
 
         await FormScreen.tapOnSwitch();
-        await expect(await FormScreen.isSwitchActive()).toEqual(false);
+        await FormScreen.expectSwitchActive(false);
     });
 
     it('should be able select a value from the select element', async () => {
@@ -57,15 +43,15 @@ describe('WebdriverIO and Appium, when interacting with form elements,', () => {
 
         await FormScreen.tapOnDropDown();
         await Picker.selectValue(valueOne);
-        await expect(await FormScreen.getDropDownText()).toContain(valueOne);
+        await FormScreen.expectDropDownToContain(valueOne);
 
         await FormScreen.tapOnDropDown();
         await Picker.selectValue(valueTwo);
-        await expect(await FormScreen.getDropDownText()).toContain(valueTwo);
+        await FormScreen.expectDropDownToContain(valueTwo);
 
         await FormScreen.tapOnDropDown();
         await Picker.selectValue(valueThree);
-        await expect(await FormScreen.getDropDownText()).toContain(valueThree);
+        await FormScreen.expectDropDownToContain(valueThree);
     });
 
     it('should be able to open the alert and close it with all 3 buttons', async () => {
@@ -76,7 +62,7 @@ describe('WebdriverIO and Appium, when interacting with form elements,', () => {
         });
         await FormScreen.tapOnActiveButton();
         await NativeAlert.waitForIsShown(true);
-        await expect(await NativeAlert.text()).toContain('This button is');
+        await NativeAlert.waitForTextToContain('This button is');
 
         /**
          * The following steps don't contain any assertions. This might look strange, but
@@ -107,12 +93,18 @@ describe('WebdriverIO and Appium, when interacting with form elements,', () => {
         });
         // In this case the button can't be asked if it is active or not with
         // `expect(FormScreen.inActiveButton.isEnabled()).toEqual(false);`
-        // So use a click and check if shown, make sure the alert is not there
+        // So use a click and poll to confirm the alert does not appear
         await NativeAlert.waitForIsShown(false);
         await FormScreen.tapOnInActiveButton();
-        // Just wait 1 second to be sure it didn't appear
-        await driver.pause(1000);
-        // Now validate it isn't there
-        await NativeAlert.waitForIsShown(false);
+        let alertAppeared = false;
+        try {
+            await NativeAlert.waitForIsShown(true, 1000);
+            alertAppeared = true;
+        } catch (error) {
+            if (!(error instanceof Error) || !/still not existing/i.test(error.message)) {
+                throw error;
+            }
+        }
+        expect(alertAppeared).toBe(false);
     });
 });

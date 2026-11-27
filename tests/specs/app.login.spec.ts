@@ -1,9 +1,16 @@
 import TabBar from '../screenobjects/components/TabBar.js';
 import LoginScreen from '../screenobjects/LoginScreen.js';
 import NativeAlert from '../screenobjects/components/NativeAlert.js';
+import { getAppId, relaunchApp } from '../helpers/Utils.js';
 
 describe('WebdriverIO and Appium, when interacting with a login form,', () => {
+    let isFirstTest = true;
+
     beforeEach(async () => {
+        if (!isFirstTest) {
+            await relaunchApp(getAppId());
+        }
+        isFirstTest = false;
         await TabBar.waitForTabBarShown();
         await TabBar.openLogin();
         await LoginScreen.waitForIsShown(true);
@@ -16,7 +23,7 @@ describe('WebdriverIO and Appium, when interacting with a login form,', () => {
         await LoginScreen.submitLoginForm({ username: 'test@webdriver.io', password: 'Test1234!' });
         // Wait for the alert and validate it
         await NativeAlert.waitForIsShown();
-        await expect(await NativeAlert.text()).toContain('Success');
+        await NativeAlert.waitForTextToContain('Success');
 
         // Close the alert
         await NativeAlert.topOnButtonWithText('OK');
@@ -30,7 +37,7 @@ describe('WebdriverIO and Appium, when interacting with a login form,', () => {
         await LoginScreen.submitSignUpForm({ username: 'test@webdriver.io', password: 'Test1234!' });
         // Wait for the alert and validate it
         await NativeAlert.waitForIsShown();
-        await expect(await NativeAlert.text()).toContain('Signed Up');
+        await NativeAlert.waitForTextToContain('Signed Up');
 
         // Close the alert
         await NativeAlert.topOnButtonWithText('OK');

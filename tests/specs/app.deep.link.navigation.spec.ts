@@ -6,9 +6,11 @@ import SwipeScreen from '../screenobjects/SwipeScreen.js';
 import HomeScreen from '../screenobjects/HomeScreen.js';
 import DragScreen from '../screenobjects/DragScreen.js';
 import { openDeepLinkUrl } from '../helpers/Utils.js';
+import { CONTEXT_REF } from '../helpers/WebView.js';
 
 describe('WebdriverIO and Appium, when navigating by deep link', () => {
     beforeEach(async () => {
+        await driver.switchContext(CONTEXT_REF.NATIVE_APP);
         await TabBar.waitForTabBarShown();
     });
 
