@@ -63,7 +63,23 @@ jobs:
                   path: ${{ runner.temp }}/wda-derived-data
                   key: ${{ steps.wda-cache.outputs.cache-primary-key }}
 
+            - name: Warm up iOS simulator
+              timeout-minutes: 8
+              shell: bash
+              run: |
+                  mkdir -p logs
+                  {
+                      echo 'Installing the demo app'
+                      time xcrun simctl install "$IOS_UDID" apps/wdiodemoapp.app
+                      echo 'Launching the demo app'
+                      time xcrun simctl launch "$IOS_UDID" org.wdiodemoapp
+                      echo 'Terminating the demo app'
+                      time xcrun simctl terminate "$IOS_UDID" org.wdiodemoapp
+                  } 2>&1 | tee logs/ios-simulator-warm-up.log
+
             - name: Run iOS app tests
+              env:
+                  IOS_APP_PREINSTALLED: 'true'
               run: npm run ios.app
 
             - name: Upload iOS test reports and logs

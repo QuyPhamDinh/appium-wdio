@@ -51,6 +51,37 @@ export async function typeText(element: ChainablePromiseElement, text: string): 
 }
 
 /**
+ * Type text into a masked/secure field on iOS one character at a time,
+ * verifying the masked bullet count after each character to prevent dropped keys.
+ */
+export async function typeSecureText(element: ChainablePromiseElement, text: string): Promise<void> {
+    if (!driver.isIOS) {
+        await element.setValue(text);
+        return;
+    }
+
+    await element.clearValue();
+    if (text === '') {
+        return;
+    }
+
+    await element.click();
+    let expectedLength = 0;
+    for (const character of text) {
+        await element.addValue(character);
+        expectedLength += 1;
+        await driver.waitUntil(
+            async () => (await element.getText()).replace(/[^•]/g, '').length === expectedLength,
+            {
+                timeout: 2000,
+                interval: 50,
+                timeoutMsg: `Secure field bullet count did not reach ${expectedLength} after typing a character`,
+            },
+        );
+    }
+}
+
+/**
  * Get the time difference in seconds
  */
 export function timeDifference (string: string, start:number, end:number) {
